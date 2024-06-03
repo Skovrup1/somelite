@@ -5,7 +5,9 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
-    users = db.get_users()
-    return render_template("main.html", user=users)
+    db.create()
+    posts_by_user = db.get_posts_by_user()
+    print(posts_by_user)
+    return render_template("main.html", posts=posts_by_user)
 
 
