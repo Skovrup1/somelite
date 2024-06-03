@@ -1,12 +1,15 @@
 # Somelite
 Social media website made in the framework flask.
-
 For the KU course DIS, Databases and Information Systems.
 
 ### Made by
 - sdw128
 - xqd627
 - ngz419
+
+### Requirements
+- python3 & pip
+- npm & tailwind (only for updating the styling)
 
 ### Building
 ```
@@ -16,8 +19,7 @@ python3 -m venv .venv
 . .venv/bin/activate
 pip install -r requirements.txt
 ```
-#### HTML/CSS
-Only needed if you change the html/css styling
+##### CSS (only for updating the styling)
 ```
 npx tailwindcss -i ./src/static/css/input.css -o ./src/static/css/output.css --watch
 ```
@@ -25,7 +27,7 @@ npx tailwindcss -i ./src/static/css/input.css -o ./src/static/css/output.css --w
 ```
 flask --app src/server run
 ```
-#### Debug
+##### Debug
 ```
 flask --debug --app src/server run
 ```
