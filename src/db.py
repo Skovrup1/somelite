@@ -1,10 +1,21 @@
 import psycopg
 
-dbname = "test"
+dbname = "somelite"
 user = "postgres"
 
+def connect():
+    return psycopg.connect("dbname={} user={}".format(dbname, user))
 
-def test():
+
+def get_users():
+    with connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT name FROM users")
+
+            return cur.fetchall()
+
+
+'''def test():
     with connect() as conn:
         with conn.cursor() as cur:
             cur.execute("""
@@ -22,11 +33,4 @@ def test():
             cur.fetchone()
 
             for record in cur:
-                print(record)
-
-
-def connect():
-    return psycopg.connect("dbname={} user={}".format(dbname, user))
-
-
-test()
+                print(record)'''
