@@ -1,9 +1,13 @@
 import psycopg
-from psycopg import errors
+from enum import IntEnum, auto
 
 
 dbname = "somelite"
 user = "postgres"
+
+
+class Relation(IntEnum):
+    friends = auto()
 
 
 def connect():
@@ -55,6 +59,16 @@ def create():
                         )
                         """)
 
+            cur.execute("""
+                        CREATE TABLE relationships (
+                            user_id_1 integer REFERENCES users(id),
+                            user_id_2 integer REFERENCES users(id),
+                            PRIMARY KEY (user_id_1, user_id_2),
+                            CHECK (user_id_1 < user_id_2),
+                            type integer
+                        )
+                        """)
+
             insert_placeholder_data(cur)
 
 
@@ -90,6 +104,10 @@ def insert_placeholder_data(cur):
         "INSERT INTO posts (user_id, date, message) VALUES (%s, %s, %s)",
         (3, "May 30, 2024", "Welcome to my domain!"),
     )
+    cur.execute(
+        "INSERT INTO relationships (user_id_1, user_id_2, type) VALUES (%s, %s, %s)",
+        (1, 2, Relation.friends),
+    )
 
 
 def get_users():
@@ -109,4 +127,28 @@ def get_posts():
                         JOIN posts ON users.id = posts.user_id;
                         """)
 
+            return cur.fetchall()
+
+
+def get_posts_of_friends(id):
+    with connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT users.name, posts.date, posts.message
+                FROM posts
+                JOIN users
+                ON posts.user_id = users.id
+                WHERE posts.user_id IN (
+                SELECT CASE
+                    WHEN user_id_1 = %(id)s THEN user_id_2
+                    ELSE user_id_1
+                END AS other_user_id
+                FROM relationships
+                WHERE user_id_1 = %(id)s
+                    OR user_id_2 = %(id)s
+            );
+            """,
+                {"id": id},
+            )
             return cur.fetchall()
