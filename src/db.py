@@ -50,6 +50,7 @@ def create():
                         CREATE TABLE posts (
                             id serial PRIMARY KEY,
                             user_id integer REFERENCES users(id),
+                            date text,
                             message text
                         )
                         """)
@@ -78,15 +79,16 @@ def insert_placeholder_data(cur):
 
     # Inserting data into the 'posts' table
     cur.execute(
-        "INSERT INTO posts (user_id, message) VALUES (%s, %s)", (1, "Hello, world!")
+        "INSERT INTO posts (user_id, date, message) VALUES (%s, %s, %s)",
+        (1, "June 1, 2024", "Hello, world!"),
     )
     cur.execute(
-        "INSERT INTO posts (user_id, message) VALUES (%s, %s)",
-        (2, "This is a test post."),
+        "INSERT INTO posts (user_id, date, message) VALUES (%s, %s, %s)",
+        (2, "May 22, 2024", "This is a test post."),
     )
     cur.execute(
-        "INSERT INTO posts (user_id, message) VALUES (%s, %s)",
-        (3, "Welcome to my blog."),
+        "INSERT INTO posts (user_id, date, message) VALUES (%s, %s, %s)",
+        (3, "May 30, 2024", "Welcome to my domain!"),
     )
 
 
@@ -98,11 +100,11 @@ def get_users():
             return cur.fetchall()
 
 
-def get_posts_by_user():
+def get_posts():
     with connect() as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                        SELECT users.name, posts.message
+                        SELECT users.name, posts.date, posts.message
                         FROM users
                         JOIN posts ON users.id = posts.user_id;
                         """)
