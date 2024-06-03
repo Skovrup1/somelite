@@ -8,6 +8,10 @@ For the KU course DIS, Databases and Information Systems.
 - xqd627
 - ngz419
 
+### Requirements
+- python3 & pip
+- npm & tailwind (only for updating the styling)
+
 ### Building
 ```
 git clone git@github.com:Skovrup1/somelite.git
@@ -16,8 +20,8 @@ python3 -m venv .venv
 . .venv/bin/activate
 pip install -r requirements.txt
 ```
-#### HTML/CSS
-Only needed if you change the html/css styling
+##### CSS
+Only needed if you change the css styling
 ```
 npx tailwindcss -i ./src/static/css/input.css -o ./src/static/css/output.css --watch
 ```
@@ -25,7 +29,7 @@ npx tailwindcss -i ./src/static/css/input.css -o ./src/static/css/output.css --w
 ```
 flask --app src/server run
 ```
-#### Debug
+##### Debug
 ```
 flask --debug --app src/server run
 ```
