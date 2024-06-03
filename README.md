@@ -16,8 +16,16 @@ python3 -m venv .venv
 . .venv/bin/activate
 pip install -r requirements.txt
 ```
-
+#### HTML/CSS
+Only needed if you change the html/css styling
+```
+npx tailwindcss -i ./src/static/css/input.css -o ./src/static/css/output.css --watch
+```
 ### Running
 ```
 flask --app src/server run
+```
+#### Debug
+```
+flask --debug --app src/server run
 ```
