@@ -1,37 +1,22 @@
-from flask import Flask, render_template
-import db
+from flask import Flask
+from database import Db
 
-app = Flask(__name__)
+db = Db("somelite", "postgres")
 
+def create_app():
+    app = Flask(__name__)
 
-@app.route("/")
-def index():
+    app.config["SECRET_KEY"] = "password"
+
+    # delete the old db if it exists
+    db.delete()
     db.create()
-    posts = db.get_posts()
-    return render_template("main.html", posts=posts)
+    db.create_tables()
 
+    from auth import auth_bp
+    app.register_blueprint(auth_bp)
 
-@app.route("/home")
-def home():
-    posts = db.get_posts()
-    return render_template("main.html", posts=posts)
+    from main import main_bp
+    app.register_blueprint(main_bp)
 
-
-@app.route("/friends")
-def friends():
-    # hardcoded as alice for now
-    posts = db.get_posts_of_friends(1)
-    print(friends)
-    return render_template("main.html", posts=posts)
-
-
-@app.route("/groups")
-def groups():
-    posts = db.get_posts()
-    return render_template("main.html", posts=posts)
-
-
-@app.route("/log_out")
-def log_out():
-    posts = db.get_posts()
-    return render_template("main.html", posts=posts)
+    return app

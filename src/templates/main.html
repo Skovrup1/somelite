@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-<meta charset="UTF-8">
-<title>Somelite</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<link href="{{url_for('static', filename='css/output.css')}}" rel="stylesheet">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link href="{{url_for('static', filename='css/output.css')}}" rel="stylesheet">
+</head>
 
 <body class="bg-gray-100 text-gray-800 flex flex-col min-h-screen">
     <!-- Header -->
@@ -15,7 +17,7 @@
                     <li><a href="home" class="hover:underline">Home</a></li>
                     <li><a href="friends" class="hover:underline">Friends</a></li>
                     <li><a href="groups" class="hover:underline">Groups</a></li>
-                    <li><a href="log_out" class="hover:underline">Log out</a></li>
+                    <li><a href="logout" class="hover:underline">Log out</a></li>
                 </ul>
             </nav>
         </div>
@@ -28,7 +30,7 @@
             <h2 class="text-2xl font-bold mb-2">{{post[0]}}</h2>
             <p class="text-gray-600 mb-4">{{post[1]}}</p>
             <p class="mb-4">
-            {{post[2]}}
+                {{post[2]}}
             </p>
         </article>
         {% endfor %}
