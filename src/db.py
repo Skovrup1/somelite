@@ -141,6 +141,20 @@ def get_posts_of_friends(id):
                 JOIN users
                 ON posts.user_id = users.id
                 WHERE posts.user_id IN (
+                SELECT user_id_2 AS other_user_id
+                FROM relationships
+                WHERE user_id_1 = %(id)s
+                    SELECT user_id_1 AS other_user_id
+                    FROM relationships
+                    WHERE user_id_2 = %(id)s
+                )
+                OR post.user_id IN (
+                    SELECT user_id_1 AS other_user_id
+                    FROM relationships
+                    WHERE user_id_2 = %(id)s
+                )
+
+
                 SELECT CASE
                     WHEN user_id_1 = %(id)s THEN user_id_2
                     ELSE user_id_1
