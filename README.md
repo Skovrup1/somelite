@@ -12,11 +12,20 @@ For the KU course DIS, Databases and Information Systems.
 - npm & tailwind (only for updating the styling)
 
 ### Building
+##### Linux
 ```
-git clone git@github.com:Skovrup1/somelite.git
+git clone git@github.com:skovrup1/somelite.git
 cd somelite
 python3 -m venv .venv
 . .venv/bin/activate
+pip install -r requirements.txt
+```
+##### Windows
+```
+git clone git@github.com:skovrup1/somelite.git
+cd somelite
+python3 -m venv .venv
+./.venv/Scripts/activate
 pip install -r requirements.txt
 ```
 ##### CSS (only for updating the styling)

@@ -4,6 +4,7 @@ from enum import IntEnum, auto
 
 dbname = "somelite"
 user = "postgres"
+password = "postgres"
 
 
 class Relation(IntEnum):
@@ -11,11 +12,11 @@ class Relation(IntEnum):
 
 
 def connect():
-    return psycopg.connect("dbname={} user={}".format(dbname, user))
+    return psycopg.connect("dbname={} user={} password={}".format(dbname, user, password))
 
 
 def recreate():
-    with psycopg.connect("dbname={} user={}".format("postgres", user)) as conn:
+    with psycopg.connect("dbname={} user={} password={}".format("postgres", user, password)) as conn:
         conn.autocommit = True
 
         with conn.cursor() as cur:
