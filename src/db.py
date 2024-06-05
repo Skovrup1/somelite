@@ -86,6 +86,10 @@ def insert_placeholder_data(cur):
         "INSERT INTO users (name, password, age) VALUES (%s, %s, %s)",
         ("Charlie", "password3", 25),
     )
+    cur.execute(
+        "INSERT INTO users (name, password, age) VALUES (%s, %s, %s)",
+        ("David", "password4", 40),
+    )
 
     # Inserting data into the 'groups' table
     cur.execute("INSERT INTO groups (user_id, name) VALUES (%s, %s)", (1, "Staff"))
@@ -104,6 +108,10 @@ def insert_placeholder_data(cur):
     cur.execute(
         "INSERT INTO posts (user_id, date, message) VALUES (%s, %s, %s)",
         (3, "May 30, 2024", "Welcome to my domain!"),
+    )
+    cur.execute(
+        "INSERT INTO posts (user_id, date, message) VALUES (%s, %s, %s)",
+        (4, "May 30, 2024", "Test post, please ignore"),
     )
     cur.execute(
         "INSERT INTO relationships (user_id_1, user_id_2, type) VALUES (%s, %s, %s)",
@@ -154,3 +162,9 @@ def get_posts_of_friends(id):
                 {"id": id},
             )
             return cur.fetchall()
+        
+def create_new_user(curx, namex, passwordx, agex):
+    curx.execute(
+    "INSERT INTO users (name, password, age) VALUES (%s, %s, %s)",
+    (namex, passwordx, agex),
+    )
