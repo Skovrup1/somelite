@@ -70,6 +70,8 @@ def create():
                         )
                         """)
 
+            cur.execute("""
+                        CREATE TABLE group_memberships (
                             user_id integer REFERENCES users(id) ON DELETE CASCADE,
                             group_id integer REFERENCES groups(id) ON DELETE CASCADE,
                             PRIMARY KEY (user_id, group_id)
