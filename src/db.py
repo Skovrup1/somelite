@@ -4,7 +4,7 @@ from enum import IntEnum, auto
 
 dbname = "somelite"
 user = "postgres"
-password = "postgres"
+password = "123456"
 
 
 class Relation(IntEnum):
