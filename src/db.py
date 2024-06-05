@@ -97,7 +97,7 @@ def insert_placeholder_data(cur):
     add_relation(1, 2, Relation.friends)
     add_relation(1, 3, Relation.friends)
 
-    # Removing a relationship
+    # # Removing a relationship
     # remove_relation(1, 2)
     # remove_relation(1,3)
 
