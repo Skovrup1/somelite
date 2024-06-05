@@ -4,7 +4,7 @@ from enum import IntEnum, auto
 
 dbname = "somelite"
 user = "postgres"
-password = "postgres"
+password = "123456"
 
 
 class Relation(IntEnum):
@@ -93,10 +93,13 @@ def insert_placeholder_data(cur):
     add_post(cur, 5, "Today yaal", "IF YOU SEE ME, SOMETHING IS WRONG")
     delete_user(cur, 5)
 
-    cur.execute(
-        "INSERT INTO relationships (user_id_1, user_id_2, type) VALUES (%s, %s, %s)",
-        (1, 2, Relation.friends),
-    )
+    # Adding a relationship
+    add_relation(1, 2, Relation.friends)
+    add_relation(1, 3, Relation.friends)
+
+    # # Removing a relationship
+    # remove_relation(1, 2)
+    # remove_relation(1,3)
 
 
 def get_users():
@@ -160,3 +163,19 @@ def add_post(curx, idx, datex, messagex):
     "INSERT INTO posts (user_id, date, message) VALUES (%s, %s, %s)",
     (idx, datex, messagex),
     )
+
+def add_relation(user_id_1, user_id_2, relation_type):
+    with connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO relationships (user_id_1, user_id_2, type) VALUES (%s, %s, %s)",
+                (user_id_1, user_id_2, relation_type),
+            )
+
+def remove_relation(user_id_1, user_id_2):
+    with connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "DELETE FROM relationships WHERE user_id_1 = %s AND user_id_2 = %s",
+                (user_id_1, user_id_2),
+            )
