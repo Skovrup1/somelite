@@ -1,6 +1,6 @@
 ### Relationship
-- add_relation()
-- remove_relation()
+- add_relation() DONE
+- remove_relation() DONE
 ### Users
 - new_user() DONE
 - delete_user() DONE
