@@ -46,7 +46,7 @@ def create():
             cur.execute("""
                         CREATE TABLE groups (
                             id serial PRIMARY KEY,
-                            user_id integer REFERENCES users(id),
+                            user_id integer REFERENCES users(id) ON DELETE CASCADE,
                             name text
                         )
                         """)
@@ -54,7 +54,7 @@ def create():
             cur.execute("""
                         CREATE TABLE posts (
                             id serial PRIMARY KEY,
-                            user_id integer REFERENCES users(id),
+                            user_id integer REFERENCES users(id) ON DELETE CASCADE,
                             date text,
                             message text
                         )
@@ -62,8 +62,8 @@ def create():
 
             cur.execute("""
                         CREATE TABLE relationships (
-                            user_id_1 integer REFERENCES users(id),
-                            user_id_2 integer REFERENCES users(id),
+                            user_id_1 integer REFERENCES users(id) ON DELETE CASCADE,
+                            user_id_2 integer REFERENCES users(id) ON DELETE CASCADE,
                             PRIMARY KEY (user_id_1, user_id_2),
                             CHECK (user_id_1 < user_id_2),
                             type integer
@@ -74,18 +74,11 @@ def create():
 
 
 def insert_placeholder_data(cur):
-    cur.execute(
-        "INSERT INTO users (name, password, age) VALUES (%s, %s, %s)",
-        ("Alice", "password1", 30),
-    )
-    cur.execute(
-        "INSERT INTO users (name, password, age) VALUES (%s, %s, %s)",
-        ("Bob", "password2", 35),
-    )
-    cur.execute(
-        "INSERT INTO users (name, password, age) VALUES (%s, %s, %s)",
-        ("Charlie", "password3", 25),
-    )
+    create_new_user(cur, "Alice", "password1", 30)
+    create_new_user(cur, "Bob", "password2", 35)
+    create_new_user(cur, "Charlie", "password3", 25)
+    create_new_user(cur, "David", "password4", 40)
+    create_new_user(cur, "DELETEME", "password5", 99)
 
     # Inserting data into the 'groups' table
     cur.execute("INSERT INTO groups (user_id, name) VALUES (%s, %s)", (1, "Staff"))
@@ -93,18 +86,13 @@ def insert_placeholder_data(cur):
     cur.execute("INSERT INTO groups (user_id, name) VALUES (%s, %s)", (3, "Alumni"))
 
     # Inserting data into the 'posts' table
-    cur.execute(
-        "INSERT INTO posts (user_id, date, message) VALUES (%s, %s, %s)",
-        (1, "June 1, 2024", "Hello, world!"),
-    )
-    cur.execute(
-        "INSERT INTO posts (user_id, date, message) VALUES (%s, %s, %s)",
-        (2, "May 22, 2024", "This is a test post."),
-    )
-    cur.execute(
-        "INSERT INTO posts (user_id, date, message) VALUES (%s, %s, %s)",
-        (3, "May 30, 2024", "Welcome to my domain!"),
-    )
+    add_post(cur, 1, "June 1, 2024", "Hello, world!")
+    add_post(cur, 2, "May 22, 2024", "This is a test post.")
+    add_post(cur, 3, "May 30, 2024", "Welcome to my domain!")
+    add_post(cur, 4, "May 30, 2024", "Test post, please ignore")
+    add_post(cur, 5, "Today yaal", "IF YOU SEE ME, SOMETHING IS WRONG")
+    delete_user(cur, 5)
+
     cur.execute(
         "INSERT INTO relationships (user_id_1, user_id_2, type) VALUES (%s, %s, %s)",
         (1, 2, Relation.friends),
@@ -154,3 +142,21 @@ def get_posts_of_friends(id):
                 {"id": id},
             )
             return cur.fetchall()
+        
+def create_new_user(curx, namex, passwordx, agex):
+    curx.execute(
+    "INSERT INTO users (name, password, age) VALUES (%s, %s, %s)",
+    (namex, passwordx, agex),
+    )
+
+def delete_user(curx, idx):
+    curx.execute(
+    "DELETE FROM users WHERE id = %s",
+    (idx,)
+    )
+
+def add_post(curx, idx, datex, messagex):
+    curx.execute(
+    "INSERT INTO posts (user_id, date, message) VALUES (%s, %s, %s)",
+    (idx, datex, messagex),
+    )
