@@ -69,6 +69,14 @@ def create():
                             type integer
                         )
                         """)
+            
+            cur.execute("""
+                        CREATE TABLE likes (
+                            user_id integer REFERENCES users(id) ON DELETE CASCADE,
+                            post_id integer REFERENCES posts(id) ON DELETE CASCADE,
+                            PRIMARY KEY (user_id, post_id)
+                        )
+                        """)
 
             insert_placeholder_data(cur)
 
@@ -100,6 +108,21 @@ def insert_placeholder_data(cur):
     # # Removing a relationship
     # remove_relation(1, 2)
     # remove_relation(1,3)
+
+    # Adding some likes
+    like_post(1, 1)
+    like_post(1, 1)
+    like_post(2, 1)
+    like_post(1, 2)
+    like_post(3, 1) 
+    like_post(2, 3)
+    like_post(1, 4)
+
+    # Testing show_all_likes function
+    print("Number of likes for post 1:", show_all_likes(1))
+    print("Number of likes for post 2:", show_all_likes(2))
+    print("Number of likes for post 3:", show_all_likes(3))
+    print("Number of likes for post 4:", show_all_likes(4))
 
 
 def get_users():
@@ -179,3 +202,22 @@ def remove_relation(user_id_1, user_id_2):
                 "DELETE FROM relationships WHERE user_id_1 = %s AND user_id_2 = %s",
                 (user_id_1, user_id_2),
             )
+
+def like_post(user_id, post_id):
+    with connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO likes (user_id, post_id) VALUES (%s, %s) ON CONFLICT DO NOTHING", #if a duplicate like is attempted, the insertion is ignored
+                (user_id, post_id),
+            )
+
+def show_all_likes(post_id):
+    with connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                        SELECT COUNT(likes.user_id) AS like_count
+                        FROM likes
+                        WHERE likes.post_id = %s;
+                        """, (post_id,))
+            return cur.fetchone()[0]
+
