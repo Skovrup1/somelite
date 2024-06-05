@@ -74,22 +74,10 @@ def create():
 
 
 def insert_placeholder_data(cur):
-    cur.execute(
-        "INSERT INTO users (name, password, age) VALUES (%s, %s, %s)",
-        ("Alice", "password1", 30),
-    )
-    cur.execute(
-        "INSERT INTO users (name, password, age) VALUES (%s, %s, %s)",
-        ("Bob", "password2", 35),
-    )
-    cur.execute(
-        "INSERT INTO users (name, password, age) VALUES (%s, %s, %s)",
-        ("Charlie", "password3", 25),
-    )
-    cur.execute(
-        "INSERT INTO users (name, password, age) VALUES (%s, %s, %s)",
-        ("David", "password4", 40),
-    )
+    create_new_user(cur, "Alice", "password1", 30)
+    create_new_user(cur, "Bob", "password2", 35)
+    create_new_user(cur, "Charlie", "password3", 25)
+    create_new_user(cur, "David", "password4", 40)
 
     # Inserting data into the 'groups' table
     cur.execute("INSERT INTO groups (user_id, name) VALUES (%s, %s)", (1, "Staff"))
@@ -168,3 +156,4 @@ def create_new_user(curx, namex, passwordx, agex):
     "INSERT INTO users (name, password, age) VALUES (%s, %s, %s)",
     (namex, passwordx, agex),
     )
+
