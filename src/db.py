@@ -69,6 +69,13 @@ def create():
                             type integer
                         )
                         """)
+            cur.execute("""
+                        CREATE TABLE group_memberships (
+                            user_id integer REFERENCES users(id) ON DELETE CASCADE,
+                            group_id integer REFERENCES groups(id) ON DELETE CASCADE,
+                            PRIMARY KEY (user_id, group_id)
+                        )
+                        """)
 
             insert_placeholder_data(cur)
 
@@ -179,3 +186,24 @@ def remove_relation(user_id_1, user_id_2):
                 "DELETE FROM relationships WHERE user_id_1 = %s AND user_id_2 = %s",
                 (user_id_1, user_id_2),
             )
+
+def add_group(curx, owner_id, namex):
+    curx.execute("INSERT INTO groups (user_id, name) VALUES (%s, %s)", (owner_id, namex))
+
+def delete_group(curx, owner_id):
+    curx.execute(
+    "DELETE FROM groups WHERE user_id = %s",
+    (owner_id,)
+    )
+
+def join_group(curx, user_id, group_id):
+    curx.execute(
+        "INSERT INTO group_memberships (user_id, group_id) VALUES (%s, %s)",
+        (user_id, group_id),
+    )
+
+def leave_group(curx, user_id, group_id):
+    curx.execute(
+    "DELETE FROM group_memberships WHERE user_id = %s AND group_id = %s",
+    (user_id, group_id)
+    )
