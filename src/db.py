@@ -70,6 +70,12 @@ def create():
                         )
                         """)
 
+                            user_id integer REFERENCES users(id) ON DELETE CASCADE,
+                            group_id integer REFERENCES groups(id) ON DELETE CASCADE,
+                            PRIMARY KEY (user_id, group_id)
+                        )
+                        """)
+
             insert_placeholder_data(cur)
 
 
@@ -78,7 +84,7 @@ def insert_placeholder_data(cur):
     create_new_user(cur, "Bob", "password2", 35)
     create_new_user(cur, "Charlie", "password3", 25)
     create_new_user(cur, "David", "password4", 40)
-    create_new_user(cur, "DELETEME", "password5", 99)
+    create_new_user(cur, "DELETE_USER() IS BUGGED", "password5", 99)
 
     # Inserting data into the 'groups' table
     cur.execute("INSERT INTO groups (user_id, name) VALUES (%s, %s)", (1, "Staff"))
@@ -90,7 +96,7 @@ def insert_placeholder_data(cur):
     add_post(cur, 2, "May 22, 2024", "This is a test post.")
     add_post(cur, 3, "May 30, 2024", "Welcome to my domain!")
     add_post(cur, 4, "May 30, 2024", "Test post, please ignore")
-    add_post(cur, 5, "Today yaal", "IF YOU SEE ME, SOMETHING IS WRONG")
+    add_post(cur, 5, "You done goofed up boii", "DELETE_POST DOESNT WORK!!")
     delete_user(cur, 5)
 
     cur.execute(
@@ -159,4 +165,25 @@ def add_post(curx, idx, datex, messagex):
     curx.execute(
     "INSERT INTO posts (user_id, date, message) VALUES (%s, %s, %s)",
     (idx, datex, messagex),
+    )
+
+def add_group(curx, owner_id, namex):
+    curx.execute("INSERT INTO groups (user_id, name) VALUES (%s, %s)", (owner_id, namex))
+
+def delete_group(curx, owner_id):
+    curx.execute(
+    "DELETE FROM groups WHERE user_id = %s",
+    (owner_id,)
+    )
+
+def join_group(curx, user_id, group_id):
+    curx.execute(
+        "INSERT INTO group_memberships (user_id, group_id) VALUES (%s, %s)",
+        (user_id, group_id),
+    )
+
+def leave_group(curx, user_id, group_id):
+    curx.execute(
+    "DELETE FROM group_memberships WHERE user_id = %s AND group_id = %s",
+    (user_id, group_id)
     )

@@ -2,18 +2,18 @@
 - add_relation()
 - remove_relation()
 ### Users
-- new_user()
-- delete_user()
+- new_user() DONE
+- delete_user() DONE
 - login()
 - logout()
 ### Group
 - show_all_posts_in_group()
-- add_group()
-- delete_group()
-- join_group()
-- leave_group()
+- add_group() DONE
+- delete_group() DONE
+- join_group() DONE
+- leave_group() DONE
 ### Posts
-- add_post
+- add_post DONE
 - show_all_likes()
 ### Likes
 - like_posts()
