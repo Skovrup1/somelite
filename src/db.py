@@ -70,14 +70,6 @@ def create():
                         )
                         """)
 
-            cur.execute("""
-                        CREATE TABLE group_memberships (
-                            user_id integer REFERENCES users(id) ON DELETE CASCADE,
-                            group_id integer REFERENCES groups(id) ON DELETE CASCADE,
-                            PRIMARY KEY (user_id, group_id)
-                        )
-                        """)
-
             insert_placeholder_data(cur)
 
 
@@ -86,7 +78,7 @@ def insert_placeholder_data(cur):
     create_new_user(cur, "Bob", "password2", 35)
     create_new_user(cur, "Charlie", "password3", 25)
     create_new_user(cur, "David", "password4", 40)
-    create_new_user(cur, "DELETE_USER() IS BUGGED", "password5", 99)
+    create_new_user(cur, "DELETEME", "password5", 99)
 
     # Inserting data into the 'groups' table
     cur.execute("INSERT INTO groups (user_id, name) VALUES (%s, %s)", (1, "Staff"))
@@ -98,7 +90,7 @@ def insert_placeholder_data(cur):
     add_post(cur, 2, "May 22, 2024", "This is a test post.")
     add_post(cur, 3, "May 30, 2024", "Welcome to my domain!")
     add_post(cur, 4, "May 30, 2024", "Test post, please ignore")
-    add_post(cur, 5, "You done goofed up boii", "DELETE_POST DOESNT WORK!!")
+    add_post(cur, 5, "Today yaal", "IF YOU SEE ME, SOMETHING IS WRONG")
     delete_user(cur, 5)
 
     # Adding a relationship
@@ -171,3 +163,19 @@ def add_post(curx, idx, datex, messagex):
     "INSERT INTO posts (user_id, date, message) VALUES (%s, %s, %s)",
     (idx, datex, messagex),
     )
+
+def add_relation(user_id_1, user_id_2, relation_type):
+    with connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO relationships (user_id_1, user_id_2, type) VALUES (%s, %s, %s)",
+                (user_id_1, user_id_2, relation_type),
+            )
+
+def remove_relation(user_id_1, user_id_2):
+    with connect() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "DELETE FROM relationships WHERE user_id_1 = %s AND user_id_2 = %s",
+                (user_id_1, user_id_2),
+            )
