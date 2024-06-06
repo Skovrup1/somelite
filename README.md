@@ -25,9 +25,9 @@ npx tailwindcss -i ./src/static/css/input.css -o ./src/static/css/output.css --w
 ```
 ### Running
 ```
-flask --app src/server run
+flask --app src/app run
 ```
 ##### Debug
 ```
-flask --debug --app src/server run
+flask --debug --app src/app run
 ```
