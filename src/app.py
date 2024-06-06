@@ -1,14 +1,14 @@
 from flask import Flask
+from flask_login import LoginManager
+
 from database import Db
-from user import User
 
 db = Db("somelite", "somelite", "postgres", "postgres")
-current_user = User(1, "Alice")
-
 
 def create_app():
     app = Flask(__name__)
 
+    # python -c 'import secrets; print(secrets.token_hex())'
     app.config["SECRET_KEY"] = "password"
 
     # delete the old db if it exists
@@ -24,5 +24,13 @@ def create_app():
     from main import main
 
     app.register_blueprint(main)
+
+    from user import User
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+    login_manager.login_view = "auth.login"
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.get(user_id)
 
     return app
