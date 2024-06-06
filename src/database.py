@@ -1,6 +1,6 @@
 import psycopg
 from enum import IntEnum, auto
-
+from werkzeug.security import generate_password_hash
 
 class Relation(IntEnum):
     friends = auto()
@@ -102,16 +102,27 @@ class Db:
                 self.insert_placeholder_data(cur)
 
     def create_user(cur, name, email, password, age):
+        hash_pass = generate_password_hash(password)
+
         cur.execute(
             "INSERT INTO users (name, email, password, age) VALUES (%s, %s, %s, %s)",
-            (name, email, password, age),
+            (name, email, hash_pass, age),
         )
 
 
-    def add_post(self, cur, id, date="CURRENT_TIMESTAMP", message=""):
+    def add_post(cur, id, date="CURRENT_TIMESTAMP", message=""):
         cur.execute(
             "INSERT INTO posts (user_id, date, message) VALUES ('{}', {}, '{}')".format(id, date, message)
         )
+
+    def get_user(cur, id):
+        cur.execute("""
+                    SELECT *
+                    FROM users
+                    WHERE id = %s
+                    """, (id,))
+
+        return cur.fetchone()
 
     def get_user_by_email(cur, email):
         print("GETUSER")
@@ -176,10 +187,10 @@ class Db:
                 )
 
     def insert_placeholder_data(self, cur):
-        Db.create_user(cur, "alice", "alice@alice", "password1", 30)
-        Db.create_user(cur, "bob", "bob@bob", "password2", 35)
-        Db.create_user(cur, "charlie","charlie@charlie", "password3", 25)
-        Db.create_user(cur, "david", "david@David", "password4", 40)
+        Db.create_user(cur, "alice", "alice@alice", "alice", 30)
+        Db.create_user(cur, "bob", "bob@bob", "bob", 35)
+        Db.create_user(cur, "charlie","charlie@charlie", "charlie", 25)
+        Db.create_user(cur, "david", "david@David", "david", 40)
 
         # Inserting data into the 'groups' table
         cur.execute("INSERT INTO groups (user_id, name) VALUES (%s, %s)", (1, "Staff"))
@@ -189,10 +200,10 @@ class Db:
         cur.execute("INSERT INTO groups (user_id, name) VALUES (%s, %s)", (3, "Alumni"))
 
         # Inserting data into the 'posts' table
-        self.add_post(cur, 1, message="Hello, world!")
-        self.add_post(cur, 2, message="This is a test post.")
-        self.add_post(cur, 3, message="Welcome to my domain!")
-        self.add_post(cur, 4, message="Test post, please ignore")
+        Db.add_post(cur, 1, message="Hello, world!")
+        Db.add_post(cur, 2, message="This is a test post.")
+        Db.add_post(cur, 3, message="Welcome to my domain!")
+        Db.add_post(cur, 4, message="Test post, please ignore")
 
         # Adding a relationship
         self.add_relation(1, 2, Relation.friends)

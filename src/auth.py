@@ -1,7 +1,10 @@
 from flask import Blueprint, render_template, redirect, url_for, request  # , flash
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash
+from flask_login import login_user, logout_user, login_required
+
 from database import Db
-from app import db, current_user
+from app import db
+from user import User
 
 auth = Blueprint("auth", __name__)
 
@@ -25,16 +28,14 @@ def login_post():
         print("no user by that email")
         return redirect(url_for("auth.login"))
 
-    user_pass = user[3]
+    # create user from id
+    user = User.get(user[0])
 
     password = request.form.get("password")
-    print("pass")
-    print(password)
-    pass_match = check_password_hash(user_pass, password)
 
+    pass_match = check_password_hash(user.password, password)
     if pass_match:
-        current_user.id = user[0]
-        current_user.name = user[1]
+        login_user(user, remember=False)
 
         return redirect(url_for("main.home"))
     else:
@@ -57,11 +58,9 @@ def signup_post():
     print(email)
 
     password = request.form.get("password")
-    hashed_password = generate_password_hash(password)
-    print(hashed_password)
 
     with db.connect().cursor() as cur:
-        Db.create_user(cur, name, email, hashed_password, 20)
+        Db.create_user(cur, name, email, password, 20)
 
         users = Db.get_users(cur)
         print(users)
@@ -74,5 +73,7 @@ def signup_post():
 
 
 @auth.route("/logout")
+@login_required
 def logout():
-    return "Logout"
+    logout_user()
+    return redirect(url_for("auth.login"))
