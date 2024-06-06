@@ -14,14 +14,14 @@ def index():
 def home():
     posts = db.get_posts()
     return render_template(
-        "main.html", posts=posts, user=(current_user.id, current_user.name.capitalize())
+        "home.html", posts=posts, user=(current_user.id, current_user.name.capitalize())
     )
 
 
 @main.route("/friends")
 def friends():
     # hardcoded as alice for now
-    posts = db.get_posts_of_friends(1)
+    posts = db.get_posts_of_friends(current_user.id)
     print(friends)
     return render_template("main.html", posts=posts)
 
