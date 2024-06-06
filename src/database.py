@@ -35,11 +35,12 @@ class Db:
                 cur.execute("CREATE DATABASE {}".format(self.name))
 
     def connect(self):
-        return psycopg.connect(
-            "dbname={} user={} password={}".format(
-                self.name, self.user, self.password
-            )
+        conn = psycopg.connect(
+            "dbname={} user={} password={}".format(self.name, self.user, self.password)
         )
+        conn.autocommit = True
+        
+        return conn
 
     def create_tables(self):
         with self.connect() as conn:
@@ -49,6 +50,7 @@ class Db:
                 cur.execute("""CREATE TABLE users (
                                 id serial PRIMARY KEY,
                                 name text,
+                                email text,
                                 password text,
                                 age integer
                             )
@@ -99,10 +101,10 @@ class Db:
 
                 self.insert_placeholder_data(cur)
 
-    def create_new_user(curx, namex, passwordx, agex):
-        curx.execute(
-            "INSERT INTO users (name, password, age) VALUES (%s, %s, %s)",
-            (namex, passwordx, agex),
+    def create_user(cur, name, email, password, age):
+        cur.execute(
+            "INSERT INTO users (name, email, password, age) VALUES (%s, %s, %s, %s)",
+            (name, email, password, age),
         )
 
     def add_post(self, curx, idx, datex, messagex):
@@ -111,15 +113,24 @@ class Db:
             (idx, datex, messagex),
         )
 
+    def get_user_by_email(cur, email):
+        print("GETUSER")
+        print(email)
+        cur.execute("""
+                    SELECT *
+                    FROM users
+                    WHERE email = %s
+                    """, (email,))
+
+        return cur.fetchone()
+
     def delete_user(self, curx, idx):
         curx.execute("DELETE FROM users WHERE id = %s", (idx,))
 
-    def get_users(self):
-        with self.connect() as conn:
-            with conn.cursor() as cur:
-                cur.execute("SELECT * FROM users")
+    def get_users(cur):
+        cur.execute("SELECT * FROM users")
 
-                return cur.fetchall()
+        return cur.fetchall()
 
     def get_posts(self):
         with self.connect() as conn:
@@ -165,11 +176,10 @@ class Db:
                 )
 
     def insert_placeholder_data(self, cur):
-        Db.create_new_user(cur, "Alice", "password1", 30)
-        Db.create_new_user(cur, "Bob", "password2", 35)
-        Db.create_new_user(cur, "Charlie", "password3", 25)
-        Db.create_new_user(cur, "David", "password4", 40)
-        Db.create_new_user(cur, "DELETEME", "password5", 99)
+        Db.create_user(cur, "alice", "alice@alice", "password1", 30)
+        Db.create_user(cur, "bob", "bob@bob", "password2", 35)
+        Db.create_user(cur, "charlie","charlie@charlie", "password3", 25)
+        Db.create_user(cur, "david", "david@David", "password4", 40)
 
         # Inserting data into the 'groups' table
         cur.execute("INSERT INTO groups (user_id, name) VALUES (%s, %s)", (1, "Staff"))
@@ -183,8 +193,6 @@ class Db:
         self.add_post(cur, 2, "May 22, 2024", "This is a test post.")
         self.add_post(cur, 3, "May 30, 2024", "Welcome to my domain!")
         self.add_post(cur, 4, "May 30, 2024", "Test post, please ignore")
-        self.add_post(cur, 5, "Today yaal", "IF YOU SEE ME, SOMETHING IS WRONG")
-        self.delete_user(cur, 5)
 
         # Adding a relationship
         self.add_relation(1, 2, Relation.friends)
@@ -204,16 +212,16 @@ class Db:
         self.like_post(1, 4)
 
         # Testing show_all_likes function
-        print("Number of likes for post 1:", self.show_all_likes(1))
-        print("Number of likes for post 2:", self.show_all_likes(2))
-        print("Number of likes for post 3:", self.show_all_likes(3))
-        print("Number of likes for post 4:", self.show_all_likes(4))
+        # print("Number of likes for post 1:", self.show_all_likes(1))
+        # print("Number of likes for post 2:", self.show_all_likes(2))
+        # print("Number of likes for post 3:", self.show_all_likes(3))
+        # print("Number of likes for post 4:", self.show_all_likes(4))
 
         # Testing regular_match function
-        print("Posts matching 'world':", self.regular_match("world"))
-        print("Posts matching 'world':", self.regular_match("WORLD"))
-        print("Posts matching 'world':", self.regular_match("hello world"))
-        print("Posts matching 'world':", self.regular_match("test world"))
+        # print("Posts matching 'world':", self.regular_match("world"))
+        # print("Posts matching 'world':", self.regular_match("WORLD"))
+        # print("Posts matching 'world':", self.regular_match("hello world"))
+        # print("Posts matching 'world':", self.regular_match("test world"))
 
     def remove_relation(self, user_id_1, user_id_2):
         with self.connect() as conn:

@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template
-from app import db
+from app import db, current_user
 
-main = Blueprint('main', __name__)
+main = Blueprint("main", __name__)
+
 
 @main.route("/")
 def index():
@@ -12,7 +13,9 @@ def index():
 @main.route("/home")
 def home():
     posts = db.get_posts()
-    return render_template("main.html", posts=posts)
+    return render_template(
+        "main.html", posts=posts, user=(current_user.id, current_user.name.capitalize())
+    )
 
 
 @main.route("/friends")
@@ -33,6 +36,7 @@ def groups():
 def logout():
     posts = db.get_posts()
     return render_template("main.html", posts=posts)
+
 
 @main.route("/login")
 def login():
