@@ -4,7 +4,7 @@ from enum import IntEnum, auto
 
 dbname = "somelite"
 user = "postgres"
-password = "123"
+password = "123456"
 
 
 class Relation(IntEnum):
@@ -132,6 +132,14 @@ def insert_placeholder_data(cur):
     print("Number of likes for post 3:", show_all_likes(3))
     print("Number of likes for post 4:", show_all_likes(4))
 
+    # Testing regular_match function
+    print("Posts matching 'world':", regular_match("world"))
+    print("Posts matching 'world':", regular_match("WORLD"))
+    print("Posts matching 'world':", regular_match("hello world"))
+    print("Posts matching 'world':", regular_match("test world"))
+
+
+
 
 def get_users():
     with connect() as conn:
@@ -249,3 +257,17 @@ def show_all_likes(post_id):
                         WHERE likes.post_id = %s;
                         """, (post_id,))
             return cur.fetchone()[0]
+
+def regular_match(keyword):
+    with connect() as conn:
+        with conn.cursor() as cur:
+            words = keyword.split()
+            pattern = "|".join(words)
+            query = """
+                SELECT users.name, posts.date, posts.message, posts.id
+                FROM posts
+                JOIN users ON posts.user_id = users.id
+                WHERE posts.message ~* %s;
+            """
+            cur.execute(query, (pattern,))
+            return cur.fetchall()

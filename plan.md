@@ -14,8 +14,8 @@
 - leave_group() DONE
 ### Posts
 - add_post DONE
-- show_all_likes()
+- show_all_likes() DONE
 ### Likes
-- like_posts()
+- like_posts() DONE
 ### Search
-- regular_match()
+- regular_match() DONE
