@@ -4,8 +4,8 @@
 ### Users
 - new_user() DONE
 - delete_user() DONE
-- login()
-- logout()
+- login() DONE
+- logout() DONE
 ### Group
 - show_all_posts_in_group()
 - add_group() DONE
@@ -19,3 +19,5 @@
 - like_posts() DONE
 ### Search
 - regular_match() DONE
+### Misc()
+- update placeholder data, to be randomized and be able to generate n users
