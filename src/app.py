@@ -1,7 +1,7 @@
 from flask import Flask
 from database import Db
 
-db = Db("somelite", "postgres")
+db = Db("somelite", "somelite", "postgres", "postgres")
 
 def create_app():
     app = Flask(__name__)
@@ -13,10 +13,10 @@ def create_app():
     db.create()
     db.create_tables()
 
-    from .auth import auth
+    from auth import auth
     app.register_blueprint(auth)
 
-    from .main import main
+    from main import main
     app.register_blueprint(main)
 
     return app
