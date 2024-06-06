@@ -68,7 +68,7 @@ class Db:
                             CREATE TABLE posts (
                                 id serial PRIMARY KEY,
                                 user_id integer REFERENCES users(id) ON DELETE CASCADE,
-                                date text,
+                                date TIMESTAMP,
                                 message text
                             )
                             """)
@@ -107,10 +107,10 @@ class Db:
             (name, email, password, age),
         )
 
-    def add_post(self, curx, idx, datex, messagex):
-        curx.execute(
-            "INSERT INTO posts (user_id, date, message) VALUES (%s, %s, %s)",
-            (idx, datex, messagex),
+
+    def add_post(self, cur, id, date="CURRENT_TIMESTAMP", message=""):
+        cur.execute(
+            "INSERT INTO posts (user_id, date, message) VALUES ('{}', {}, '{}')".format(id, date, message)
         )
 
     def get_user_by_email(cur, email):
@@ -189,10 +189,10 @@ class Db:
         cur.execute("INSERT INTO groups (user_id, name) VALUES (%s, %s)", (3, "Alumni"))
 
         # Inserting data into the 'posts' table
-        self.add_post(cur, 1, "June 1, 2024", "Hello, world!")
-        self.add_post(cur, 2, "May 22, 2024", "This is a test post.")
-        self.add_post(cur, 3, "May 30, 2024", "Welcome to my domain!")
-        self.add_post(cur, 4, "May 30, 2024", "Test post, please ignore")
+        self.add_post(cur, 1, message="Hello, world!")
+        self.add_post(cur, 2, message="This is a test post.")
+        self.add_post(cur, 3, message="Welcome to my domain!")
+        self.add_post(cur, 4, message="Test post, please ignore")
 
         # Adding a relationship
         self.add_relation(1, 2, Relation.friends)
