@@ -13,10 +13,10 @@ def create_app():
     db.create()
     db.create_tables()
 
-    from auth import auth_bp
-    app.register_blueprint(auth_bp)
+    from .auth import auth
+    app.register_blueprint(auth)
 
-    from main import main_bp
-    app.register_blueprint(main_bp)
+    from .main import main
+    app.register_blueprint(main)
 
     return app
