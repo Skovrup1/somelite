@@ -4,7 +4,7 @@ from enum import IntEnum, auto
 
 dbname = "somelite"
 user = "postgres"
-password = "123456"
+password = "123"
 
 
 class Relation(IntEnum):
@@ -71,6 +71,14 @@ def create():
                         """)
             
             cur.execute("""
+                        CREATE TABLE group_memberships (
+                            user_id integer REFERENCES users(id) ON DELETE CASCADE,
+                            group_id integer REFERENCES groups(id) ON DELETE CASCADE,
+                            PRIMARY KEY (user_id, group_id)
+                        )
+                        """)
+            
+            cur.execute("""
                         CREATE TABLE likes (
                             user_id integer REFERENCES users(id) ON DELETE CASCADE,
                             post_id integer REFERENCES posts(id) ON DELETE CASCADE,
@@ -109,7 +117,7 @@ def insert_placeholder_data(cur):
     # remove_relation(1, 2)
     # remove_relation(1,3)
 
-    # Adding some likes
+     # Adding some likes
     like_post(1, 1)
     like_post(1, 1)
     like_post(2, 1)
@@ -203,6 +211,27 @@ def remove_relation(user_id_1, user_id_2):
                 (user_id_1, user_id_2),
             )
 
+def add_group(curx, owner_id, namex):
+    curx.execute("INSERT INTO groups (user_id, name) VALUES (%s, %s)", (owner_id, namex))
+
+def delete_group(curx, owner_id):
+    curx.execute(
+    "DELETE FROM groups WHERE user_id = %s",
+    (owner_id,)
+    )
+
+def join_group(curx, user_id, group_id):
+    curx.execute(
+        "INSERT INTO group_memberships (user_id, group_id) VALUES (%s, %s)",
+        (user_id, group_id),
+    )
+
+def leave_group(curx, user_id, group_id):
+    curx.execute(
+    "DELETE FROM group_memberships WHERE user_id = %s AND group_id = %s",
+    (user_id, group_id)
+    )
+
 def like_post(user_id, post_id):
     with connect() as conn:
         with conn.cursor() as cur:
@@ -220,4 +249,3 @@ def show_all_likes(post_id):
                         WHERE likes.post_id = %s;
                         """, (post_id,))
             return cur.fetchone()[0]
-
