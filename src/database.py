@@ -9,8 +9,8 @@ class Relation(IntEnum):
 class Db:
     def __init__(self, name, password, user, postgres_password):
         self.name = name
-        self.user = user
         self.password = password
+        self.user = user
         self.postgres_password = postgres_password
 
     def delete(self):
@@ -26,13 +26,19 @@ class Db:
                     cur.execute("DROP DATABASE {}".format(self.name))
                 except psycopg.ProgrammingError:
                     pass
+                
+                cur.execute("DROP USER {}".format(self.name))
+
+
 
     def create(self):
-        with psycopg.connect("dbname={} user={} password={}".format("postgres", self.user, self.postgres_password)) as conn:
+        with psycopg.connect("dbname={} user={} password={}".format("postgres", "postgres", self.postgres_password)) as conn:
             conn.autocommit = True
 
             with conn.cursor() as cur:
-                cur.execute("CREATE DATABASE {}".format(self.name))
+                cur.execute("CREATE USER {} WITH PASSWORD '{}'".format(self.name, self.password))
+
+                cur.execute("CREATE DATABASE {0} OWNER {0}".format(self.name))
 
     def connect(self):
         conn = psycopg.connect(
