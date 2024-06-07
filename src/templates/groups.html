@@ -1,69 +1,49 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <link href="{{url_for('static', filename='css/output.css')}}" rel="stylesheet">
-</head>
+{% block header %}
+<div class="text-3xl font-bold">Somelite as {{user.name}}</div>
+<nav>
+    <ul class="flex flex-row space-x-4">
+        <li><a href="home" class="hover:underline">Home</a></li>
+        <li><a href="friends" class="hover:underline">Friends</a></li>
+        <li><a href="groups" class="hover:underline">Groups</a></li>
+        <li><a href="logout" class="hover:underline">Log out</a></li>
+    </ul>
+</nav>
+{% endblock %}
 
-<body class="bg-gray-100 text-gray-800 flex flex-col min-h-screen">
-    <!-- Header -->
-    <header class="bg-slate-600 text-white p-4">
-        <div class="container mx-auto">
-            <h1 class="text-3xl font-bold">Somelite as {{user.name}}</h1>
-            <nav>
-                <ul class="flex space-x-4">
-                    <li><a href="home" class="hover:underline">Home</a></li>
-                    <li><a href="friends" class="hover:underline">Friends</a></li>
-                    <li><a href="groups" class="hover:underline">Groups</a></li>
-                    <li><a href="logout" class="hover:underline">Log out</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
-
-    <!-- Group Navbar -->
-    <div class="bg-slate-800 text-white p-4">
-        <div class="container mx-auto">
-            <nav>
-                <ul class="flex space-x-4">
-                    {% for group in groups %}
-                    {% set name = group[1] %}
-                    <li><a href="?key={{name}}" class="hover:underline">{{name}}</a></li>
-                    {% endfor %}
-                </ul>
-            </nav>
-        </div>
+{% block beforemain %}
+<!-- Group Navbar -->
+<div class="bg-slate-800 text-white p-4">
+    <div class="container mx-auto">
+        <nav>
+            <ul class="flex space-x-4">
+                {% for group in groups %}
+                {% set name = group[1] %}
+                <li><a href="?key={{name}}" class="hover:underline">{{name}}</a></li>
+                {% endfor %}
+            </ul>
+        </nav>
     </div>
+</div>
+{% endblock %}
 
-    <!-- Main Content -->
-    <main class="container mx-auto p-4 flex-1">
-        {% if posts %}
-        {% for post in posts %}
-        {% set name = post[0] %}
-        {% set _post = post[1] %}
-        <article class="mb-6">
-            <h2 class="text-2xl font-bold mb-2">{{name.capitalize()}}<h2>
-                    <p class="text-gray-600 mb-4">{{_post.date}}</p>
-                    <p class="mb-4">
-                        {{_post.message}}
-                    </p>
-        </article>
-        <form class="space-y-6" action="#" method="POST">
-            <input type="hidden" name="post_id" value="{{_post.id}}">
-            <button type="like">Like {{_post.likes}}</button>
-        </form>
-        {% endfor %}
-        {% endif %}
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-slate-800 text-white p-4">
-        <div class="container mx-auto">
-            <p>Hi!</p>
-        </div>
-    </footer>
-</body>
-
-</html>
+{% block main %}
+    {% if posts %}
+    {% for post in posts %}
+    {% set name = post[0] %}
+    {% set _post = post[1] %}
+    <article class="mb-6">
+        <h2 class="text-2xl font-bold mb-2">{{name.capitalize()}}<h2>
+                <p class="text-gray-600 mb-4">{{_post.date}}</p>
+                <p class="mb-4">
+                    {{_post.message}}
+                </p>
+    </article>
+    <form class="space-y-6" action="#" method="POST">
+        <input type="hidden" name="post_id" value="{{_post.id}}">
+        <button type="like">Like {{_post.likes}}</button>
+    </form>
+    {% endfor %}
+    {% endif %}
+{% endblock %}

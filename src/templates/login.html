@@ -1,25 +1,10 @@
-<!DOCTYPE html>
-<html class="h-full bg-white" lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <link href="{{url_for('static', filename='css/output.css')}}" rel="stylesheet">
-</head>
+{% block header %}
+<div class="text-3xl font-bold">Somelite</div>
+{% endblock %}
 
-<!-- <body class="bg-gray-100 text-gray-800 flex flex-col min-h-screen"> -->
-
-<body class="h-full">
-    <!-- Header -->
-    <header class="bg-slate-600 text-white p-4">
-        <div class="container mx-auto">
-            <h1 class="text-3xl font-bold">Somelite</h1>
-            <nav>
-                <ul class="flex space-x-4">
-                </ul>
-            </nav>
-        </div>
-    </header>
+{% block beforemain %}
 
     <!-- Login Form -->
     <div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
@@ -62,13 +47,4 @@
             </p>
         </div>
     </div>
-
-    <!-- Footer -->
-    <footer class="bg-slate-800 text-white p-4">
-        <div class="container mx-auto">
-            <p>Hi!</p>
-        </div>
-    </footer>
-</body>
-
-</html>
+{% endblock %}
