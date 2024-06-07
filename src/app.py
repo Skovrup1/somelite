@@ -3,7 +3,8 @@ from flask_login import LoginManager
 
 from database import Db
 
-db = Db("somelite", "somelite", "postgres", "postgres")
+db = Db("somelite", admin_password="postgres")
+
 
 def create_app():
     app = Flask(__name__)
@@ -30,6 +31,7 @@ def create_app():
     login_manager.login_view = "auth.login"
 
     from user import User
+
     @login_manager.user_loader
     def load_user(user_id):
         return User.get(user_id)

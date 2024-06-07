@@ -8,16 +8,33 @@ class Relation(IntEnum):
 
 
 class Db:
-    def __init__(self, name, password, user, postgres_password):
+    def __init__(
+        self,
+        name,
+        user=None,
+        password=None,
+        admin_user="postgres",
+        admin_password="postgres",
+    ):
         self.name = name
-        self.password = password
-        self.user = user
-        self.postgres_password = postgres_password
+
+        if user:
+            self.user = user
+        else:
+            self.user = name
+
+        if password:
+            self.password = password
+        else:
+            self.password = name
+
+        self.admin_user = admin_user
+        self.admin_password = admin_password
 
     def delete(self):
         with psycopg.connect(
             "dbname={} user={} password={}".format(
-                "postgres", self.user, self.postgres_password
+                self.admin_user, self.admin_user, self.admin_password
             )
         ) as conn:
             conn.autocommit = True
@@ -29,24 +46,24 @@ class Db:
                     pass
 
                 try:
-                    cur.execute("DROP USER {}".format(self.name))
+                    cur.execute("DROP USER {}".format(self.user))
                 except psycopg.ProgrammingError:
                     pass
 
     def create(self):
         with psycopg.connect(
             "dbname={} user={} password={}".format(
-                "postgres", "postgres", self.postgres_password
+                self.admin_user, self.admin_user, self.admin_password
             )
         ) as conn:
             conn.autocommit = True
 
             with conn.cursor() as cur:
                 cur.execute(
-                    "CREATE USER {} WITH PASSWORD '{}'".format(self.name, self.password)
+                    "CREATE USER {} WITH PASSWORD '{}'".format(self.user, self.password)
                 )
 
-                cur.execute("CREATE DATABASE {0} OWNER {0}".format(self.name))
+                cur.execute("CREATE DATABASE {} OWNER {}".format(self.name, self.user))
 
     def connect(self):
         conn = psycopg.connect(
