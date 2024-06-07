@@ -42,16 +42,16 @@
 
    <div class="flex flex-row space-x-4">
    <form class="" action="#" method="POST">
-        <input type="hidden" name="like_post" value="{{post.id}}">
+        <input type="hidden" name="like_post" value="{{xpost.id}}">
         <button type="submit">
             <i class="fa fa-thumbs-up"></i>
             <span>
-                {{post.likes}}
+                {{xpost.likes}}
             </span>
         </button>
    </form>
    <form class="" action="#" method="POST">
-        <input type="hidden" name="delete_post" value="{{post.id}}">
+        <input type="hidden" name="delete_post" value="{{xpost.id}}">
         <button type="submit">
             <i class="fa fa-crosshairs"></i>
         </button>
