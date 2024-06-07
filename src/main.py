@@ -15,11 +15,10 @@ def index():
     return render_template("main.html", posts=posts, user=current_user)
 
 
-
 @main.route("/home")
 @login_required
 def home():
-    #posts = db.get_posts_by_user()
+    # posts = db.get_posts_by_user()
     posts = db.get_posts()
     posts = Util.convert_to_web(posts)
 
@@ -39,7 +38,7 @@ def friends():
 @main.route("/groups")
 @login_required
 def groups():
-    #posts = db.get_posts_of_groups()
+    # posts = db.get_posts_of_groups()
     posts = db.get_posts()
     posts = Util.convert_to_web(posts)
 

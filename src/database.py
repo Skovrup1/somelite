@@ -2,21 +2,43 @@ import psycopg
 from enum import IntEnum, auto
 from werkzeug.security import generate_password_hash
 
+
 class Relation(IntEnum):
     friends = auto()
 
 
 class Db:
-    def __init__(self, name, password, user, postgres_password):
+    def __init__(
+        self,
+        name,
+        user=None,
+        password=None,
+        admin_user="postgres",
+        admin_password=None,
+    ):
         self.name = name
-        self.user = user
-        self.password = password
-        self.postgres_password = postgres_password
+
+        if user:
+            self.user = user
+        else:
+            self.user = name
+
+        if password:
+            self.password = password
+        else:
+            self.password = name
+
+        self.admin_user = admin_user
+
+        if admin_password:
+            self.admin_password = admin_password
+        else:
+            self.admin_password = admin_user
 
     def delete(self):
         with psycopg.connect(
             "dbname={} user={} password={}".format(
-                "postgres", self.user, self.postgres_password
+                self.admin_user, self.admin_user, self.admin_password
             )
         ) as conn:
             conn.autocommit = True
@@ -27,19 +49,32 @@ class Db:
                 except psycopg.ProgrammingError:
                     pass
 
+                try:
+                    cur.execute("DROP USER {}".format(self.user))
+                except psycopg.ProgrammingError:
+                    pass
+
     def create(self):
-        with psycopg.connect("dbname={} user={} password={}".format("postgres", self.user, self.postgres_password)) as conn:
+        with psycopg.connect(
+            "dbname={} user={} password={}".format(
+                self.admin_user, self.admin_user, self.admin_password
+            )
+        ) as conn:
             conn.autocommit = True
 
             with conn.cursor() as cur:
-                cur.execute("CREATE DATABASE {}".format(self.name))
+                cur.execute(
+                    "CREATE USER {} WITH PASSWORD '{}'".format(self.user, self.password)
+                )
+
+                cur.execute("CREATE DATABASE {} OWNER {}".format(self.name, self.user))
 
     def connect(self):
         conn = psycopg.connect(
             "dbname={} user={} password={}".format(self.name, self.user, self.password)
         )
         conn.autocommit = True
-        
+
         return conn
 
     def create_tables(self):
@@ -109,29 +144,36 @@ class Db:
             (name, email, hash_pass, age),
         )
 
-
     def add_post(cur, id, date="CURRENT_TIMESTAMP", message=""):
         cur.execute(
-            "INSERT INTO posts (user_id, date, message) VALUES ('{}', {}, '{}')".format(id, date, message)
+            "INSERT INTO posts (user_id, date, message) VALUES ('{}', {}, '{}')".format(
+                id, date, message
+            )
         )
 
     def get_user(cur, id):
-        cur.execute("""
+        cur.execute(
+            """
                     SELECT *
                     FROM users
                     WHERE id = %s
-                    """, (id,))
+                    """,
+            (id,),
+        )
 
         return cur.fetchone()
 
     def get_user_by_email(cur, email):
         print("GETUSER")
         print(email)
-        cur.execute("""
+        cur.execute(
+            """
                     SELECT *
                     FROM users
                     WHERE email = %s
-                    """, (email,))
+                    """,
+            (email,),
+        )
 
         return cur.fetchone()
 
@@ -189,7 +231,7 @@ class Db:
     def insert_placeholder_data(self, cur):
         Db.create_user(cur, "alice", "alice@alice", "alice", 30)
         Db.create_user(cur, "bob", "bob@bob", "bob", 35)
-        Db.create_user(cur, "charlie","charlie@charlie", "charlie", 25)
+        Db.create_user(cur, "charlie", "charlie@charlie", "charlie", 25)
         Db.create_user(cur, "david", "david@David", "david", 40)
 
         # Inserting data into the 'groups' table
