@@ -2,6 +2,7 @@ import psycopg
 from enum import IntEnum, auto
 from werkzeug.security import generate_password_hash
 
+
 class Relation(IntEnum):
     friends = auto()
 
@@ -26,17 +27,21 @@ class Db:
                     cur.execute("DROP DATABASE {}".format(self.name))
                 except psycopg.ProgrammingError:
                     pass
-                
+
                 cur.execute("DROP USER {}".format(self.name))
 
-
-
     def create(self):
-        with psycopg.connect("dbname={} user={} password={}".format("postgres", "postgres", self.postgres_password)) as conn:
+        with psycopg.connect(
+            "dbname={} user={} password={}".format(
+                "postgres", "postgres", self.postgres_password
+            )
+        ) as conn:
             conn.autocommit = True
 
             with conn.cursor() as cur:
-                cur.execute("CREATE USER {} WITH PASSWORD '{}'".format(self.name, self.password))
+                cur.execute(
+                    "CREATE USER {} WITH PASSWORD '{}'".format(self.name, self.password)
+                )
 
                 cur.execute("CREATE DATABASE {0} OWNER {0}".format(self.name))
 
@@ -45,7 +50,7 @@ class Db:
             "dbname={} user={} password={}".format(self.name, self.user, self.password)
         )
         conn.autocommit = True
-        
+
         return conn
 
     def create_tables(self):
@@ -115,29 +120,36 @@ class Db:
             (name, email, hash_pass, age),
         )
 
-
     def add_post(cur, id, date="CURRENT_TIMESTAMP", message=""):
         cur.execute(
-            "INSERT INTO posts (user_id, date, message) VALUES ('{}', {}, '{}')".format(id, date, message)
+            "INSERT INTO posts (user_id, date, message) VALUES ('{}', {}, '{}')".format(
+                id, date, message
+            )
         )
 
     def get_user(cur, id):
-        cur.execute("""
+        cur.execute(
+            """
                     SELECT *
                     FROM users
                     WHERE id = %s
-                    """, (id,))
+                    """,
+            (id,),
+        )
 
         return cur.fetchone()
 
     def get_user_by_email(cur, email):
         print("GETUSER")
         print(email)
-        cur.execute("""
+        cur.execute(
+            """
                     SELECT *
                     FROM users
                     WHERE email = %s
-                    """, (email,))
+                    """,
+            (email,),
+        )
 
         return cur.fetchone()
 
@@ -195,7 +207,7 @@ class Db:
     def insert_placeholder_data(self, cur):
         Db.create_user(cur, "alice", "alice@alice", "alice", 30)
         Db.create_user(cur, "bob", "bob@bob", "bob", 35)
-        Db.create_user(cur, "charlie","charlie@charlie", "charlie", 25)
+        Db.create_user(cur, "charlie", "charlie@charlie", "charlie", 25)
         Db.create_user(cur, "david", "david@David", "david", 40)
 
         # Inserting data into the 'groups' table
