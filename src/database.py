@@ -251,6 +251,13 @@ class Db:
         self.add_relation(1, 2, Relation.friends)
         self.add_relation(1, 3, Relation.friends)
 
+        #Creating Groups
+        Db.add_group(cur, 1, "Bob og Charlie's gruppe")
+
+        #Adding Group Memberships
+        Db.join_group(cur, 2, 1)
+        Db.join_group(cur, 3, 1)
+
         # # Removing a relationship
         # remove_relation(1, 2)
         # remove_relation(1,3)
@@ -337,4 +344,46 @@ class Db:
                     WHERE posts.message ~* %s;
                 """
                 cur.execute(query, (pattern,))
+                return cur.fetchall()
+
+    def get_posts_of_group(self, groupid):
+        with self.connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT users.name, posts.date, posts.message
+                    FROM posts
+                    JOIN users
+                    ON posts.user_id = users.id
+                    WHERE posts.user_id IN (
+                        SELECT user_id
+                        FROM group_memberships
+                        WHERE group_id = %(groupid)s
+                    );
+                """,
+                    {"groupid": groupid},
+                )
+                return cur.fetchall()
+            
+    def get_posts_of_groups(self, user_id):
+        with self.connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT users.name, posts.date, posts.message
+                    FROM posts
+                    JOIN users
+                    ON posts.user_id = users.id
+                    WHERE posts.user_id IN (
+                        SELECT user_id
+                        FROM group_memberships
+                        WHERE group_id IN(
+                            SELECT group_id
+                            FROM group_memberships
+                            WHERE user_id = %(user_id)s
+                        )
+                    )
+                    """,
+                    {"user_id": user_id},
+                )
                 return cur.fetchall()

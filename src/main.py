@@ -38,8 +38,7 @@ def friends():
 @main.route("/groups")
 @login_required
 def groups():
-    # posts = db.get_posts_of_groups()
-    posts = db.get_posts()
+    posts = db.get_posts_of_groups(current_user.id)
     posts = Util.convert_to_web(posts)
 
     return render_template("main.html", posts=posts, user=current_user)
