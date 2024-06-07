@@ -1,8 +1,10 @@
 from flask import Blueprint, render_template, url_for, redirect, request
 from flask_login import login_required, current_user
 
+from database import Db
 from util import Util
 from app import db
+from post import Post
 
 main = Blueprint("main", __name__)
 
@@ -19,20 +21,29 @@ def index():
 @login_required
 def home():
     # posts = db.get_posts_by_user()
-    posts = db.get_posts()
-    posts = Util.convert_to_web(posts)
+    with db.connect().cursor() as cur:
+        names_posts = Db.get_names_and_posts(cur)
+        new_posts = []
 
-    return render_template("main.html", posts=posts, user=current_user)
+        for name_post in names_posts:
+            (name, *post) = name_post
+            new_posts.append((name, Post(*post)))
+
+        return render_template("main.html", posts=new_posts, user=current_user)
 
 
 @main.route("/friends")
 @login_required
 def friends():
-    posts = db.get_posts_of_friends(current_user.id)
-    posts = Util.convert_to_web(posts)
+    names_posts = db.get_posts_of_friends(current_user.id)
+    new_posts = []
+
+    for name_post in names_posts:
+        (name, *post) = name_post
+        new_posts.append((name, Post(*post)))
 
     print(friends)
-    return render_template("main.html", posts=posts, user=current_user)
+    return render_template("main.html", posts=new_posts, user=current_user)
 
 
 @main.route("/friends", methods=["POST"])

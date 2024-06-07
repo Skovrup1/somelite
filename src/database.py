@@ -2,6 +2,7 @@ import psycopg
 from enum import IntEnum, auto
 from werkzeug.security import generate_password_hash
 
+
 class Relation(IntEnum):
     friends = auto()
 
@@ -28,7 +29,11 @@ class Db:
                     pass
 
     def create(self):
-        with psycopg.connect("dbname={} user={} password={}".format("postgres", self.user, self.postgres_password)) as conn:
+        with psycopg.connect(
+            "dbname={} user={} password={}".format(
+                "postgres", self.user, self.postgres_password
+            )
+        ) as conn:
             conn.autocommit = True
 
             with conn.cursor() as cur:
@@ -39,7 +44,7 @@ class Db:
             "dbname={} user={} password={}".format(self.name, self.user, self.password)
         )
         conn.autocommit = True
-        
+
         return conn
 
     def create_tables(self):
@@ -109,29 +114,36 @@ class Db:
             (name, email, hash_pass, age),
         )
 
-
     def add_post(cur, id, date="CURRENT_TIMESTAMP", message=""):
         cur.execute(
-            "INSERT INTO posts (user_id, date, message) VALUES ('{}', {}, '{}')".format(id, date, message)
+            "INSERT INTO posts (user_id, date, message) VALUES ('{}', {}, '{}')".format(
+                id, date, message
+            )
         )
 
     def get_user(cur, id):
-        cur.execute("""
+        cur.execute(
+            """
                     SELECT *
                     FROM users
                     WHERE id = %s
-                    """, (id,))
+                    """,
+            (id,),
+        )
 
         return cur.fetchone()
 
     def get_user_by_email(cur, email):
         print("GETUSER")
         print(email)
-        cur.execute("""
+        cur.execute(
+            """
                     SELECT *
                     FROM users
                     WHERE email = %s
-                    """, (email,))
+                    """,
+            (email,),
+        )
 
         return cur.fetchone()
 
@@ -147,19 +159,26 @@ class Db:
         with self.connect() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                            SELECT users.name, posts.id, posts.date, posts.message
-                            FROM users
-                            JOIN posts ON users.id = posts.user_id;
+                            SELECT *
+                            FROM posts
                             """)
 
                 return cur.fetchall()
+
+    def get_names_and_posts(cur):
+        cur.execute("""
+                    SELECT users.name, posts.id, posts.user_id, posts.date, posts.message
+                    FROM users
+                    JOIN posts ON users.id = posts.user_id;
+                    """)
+        return cur.fetchall()
 
     def get_posts_of_friends(self, id):
         with self.connect() as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    SELECT users.name, posts.id, posts.date, posts.message
+                    SELECT users.name, posts.id, posts.user_id, posts.date, posts.message
                     FROM posts
                     JOIN users
                     ON posts.user_id = users.id
@@ -189,7 +208,7 @@ class Db:
     def insert_placeholder_data(self, cur):
         Db.create_user(cur, "alice", "alice@alice", "alice", 30)
         Db.create_user(cur, "bob", "bob@bob", "bob", 35)
-        Db.create_user(cur, "charlie","charlie@charlie", "charlie", 25)
+        Db.create_user(cur, "charlie", "charlie@charlie", "charlie", 25)
         Db.create_user(cur, "david", "david@David", "david", 40)
 
         # Inserting data into the 'groups' table
@@ -216,7 +235,6 @@ class Db:
         # Adding some likes
         self.like_post(1, 1)
         self.like_post(1, 1)
-        self.like_post(2, 1)
         self.like_post(1, 2)
         self.like_post(3, 1)
         self.like_post(2, 3)
