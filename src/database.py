@@ -371,6 +371,7 @@ class Db:
                 cur.execute(query, (pattern,))
                 return cur.fetchall()
 
+    #Given a group id, returns all the posts made by its members
     def get_posts_of_group(self, groupid):
         with self.connect() as conn:
             with conn.cursor() as cur:
@@ -390,6 +391,7 @@ class Db:
                 )
                 return cur.fetchall()
             
+    #Given a user_id, returns all the posts made by people who share a group with that person     
     def get_posts_of_groups(self, user_id):
         with self.connect() as conn:
             with conn.cursor() as cur:
@@ -413,6 +415,7 @@ class Db:
                 )
                 return cur.fetchall()
     
+    #Given a group ID, returns the name of the corresponding group
     def get_name_of_group(self, group_id):
         with self.connect() as conn:
             with conn.cursor() as cur:
@@ -426,6 +429,7 @@ class Db:
                 )
                 return cur.fetchall()
     
+    #Returns a list of the names of groups a given user is a member of, and the posts made by their members
     def get_posts_of_groups_ordered(self, user_id):
         with self.connect() as conn:
             with conn.cursor() as cur:
