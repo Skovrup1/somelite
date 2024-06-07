@@ -154,6 +154,9 @@ class Db:
             )
         )
 
+    def delete_post(cur, post_id):
+        cur.execute("DELETE FROM posts WHERE id = %s", (post_id,))
+
     def get_user(cur, id):
         cur.execute(
             """
@@ -270,11 +273,13 @@ class Db:
         self.add_relation(1, 3, Relation.friends)
 
         #Creating Groups
-        Db.add_group(cur, 1, "Bob og Charlie's gruppe")
+        Db.add_group(cur, 2, "Bob og Charlie's gruppe")
 
         #Adding Group Memberships
+        Db.join_group(cur, 1, 1)
         Db.join_group(cur, 2, 1)
-        Db.join_group(cur, 3, 1)
+        Db.join_group(cur, 2, 4)
+        Db.join_group(cur, 3, 4)
 
         # # Removing a relationship
         # remove_relation(1, 2)
@@ -300,6 +305,8 @@ class Db:
         # print("Posts matching 'WORLD':", self.regular_match("WORLD"))
         # print("Posts matching 'hello world':", self.regular_match("hello world"))
         # print("Posts matching 'test world':", self.regular_match("test world"))
+
+        print("Test : ", self.get_posts_of_groups_ordered(2))
 
     def remove_relation(self, user_id_1, user_id_2):
         with self.connect() as conn:
@@ -405,3 +412,38 @@ class Db:
                     {"user_id": user_id},
                 )
                 return cur.fetchall()
+    
+    def get_name_of_group(self, group_id):
+        with self.connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT name
+                    FROM groups
+                    WHERE id = %(group_id)s
+                    """,
+                    {"group_id": group_id},
+                )
+                return cur.fetchall()
+    
+    def get_posts_of_groups_ordered(self, user_id):
+        with self.connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT group_id
+                    FROM group_memberships
+                    WHERE user_id = %s
+                    """,
+                    (user_id,)
+                )
+                group_ids = cur.fetchall()
+
+                result = []
+
+                for id in group_ids:
+                    posts = Db.get_posts_of_group(self, (id[0]))
+                    name = Db.get_name_of_group(self, id[0])
+                    result.extend((posts, name))
+
+                return result
