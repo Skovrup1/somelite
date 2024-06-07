@@ -14,7 +14,7 @@ class Db:
         user=None,
         password=None,
         admin_user="postgres",
-        admin_password="postgres",
+        admin_password=None,
     ):
         self.name = name
 
@@ -29,7 +29,11 @@ class Db:
             self.password = name
 
         self.admin_user = admin_user
-        self.admin_password = admin_password
+
+        if admin_password:
+            self.admin_password = admin_password
+        else:
+            self.admin_password = admin_user
 
     def delete(self):
         with psycopg.connect(
