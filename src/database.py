@@ -6,6 +6,7 @@ import random
 
 fake = Faker()
 
+
 class Relation(IntEnum):
     friends = auto()
 
@@ -195,19 +196,26 @@ class Db:
         with self.connect() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                            SELECT users.name, posts.date, posts.message
-                            FROM users
-                            JOIN posts ON users.id = posts.user_id;
+                            SELECT *
+                            FROM posts
                             """)
 
                 return cur.fetchall()
+
+    def get_names_and_posts(cur):
+        cur.execute("""
+                    SELECT users.name, posts.id, posts.user_id, posts.date, posts.message
+                    FROM users
+                    JOIN posts ON users.id = posts.user_id;
+                    """)
+        return cur.fetchall()
 
     def get_posts_of_friends(self, id):
         with self.connect() as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    SELECT users.name, posts.date, posts.message
+                    SELECT users.name, posts.id, posts.user_id, posts.date, posts.message
                     FROM posts
                     JOIN users
                     ON posts.user_id = users.id
@@ -288,7 +296,6 @@ class Db:
         # Adding some likes
         self.like_post(1, 1)
         self.like_post(1, 1)
-        self.like_post(2, 1)
         self.like_post(1, 2)
         self.like_post(3, 1)
         self.like_post(2, 3)

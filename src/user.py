@@ -3,7 +3,7 @@ from app import db
 
 
 class User:
-    def __init__(self, id, name, email, password, age):
+    def __init__(self, id, name, email=None, password=None, age=None):
         self.id = id
         self.name = name
         self.email = email
