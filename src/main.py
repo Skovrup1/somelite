@@ -37,6 +37,7 @@ def home_post():
 
 
 
+
 @main.route("/friends")
 @login_required
 def friends():

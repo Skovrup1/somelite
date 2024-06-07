@@ -1,6 +1,10 @@
 import psycopg
 from enum import IntEnum, auto
 from werkzeug.security import generate_password_hash
+from faker import Faker
+import random
+
+fake = Faker()
 
 
 class Relation(IntEnum):
@@ -8,16 +12,37 @@ class Relation(IntEnum):
 
 
 class Db:
-    def __init__(self, name, password, user, postgres_password):
+    def __init__(
+        self,
+        name,
+        user=None,
+        password=None,
+        admin_user="postgres",
+        admin_password=None,
+    ):
         self.name = name
-        self.user = user
-        self.password = password
-        self.postgres_password = postgres_password
+
+        if user:
+            self.user = user
+        else:
+            self.user = name
+
+        if password:
+            self.password = password
+        else:
+            self.password = name
+
+        self.admin_user = admin_user
+
+        if admin_password:
+            self.admin_password = admin_password
+        else:
+            self.admin_password = admin_user
 
     def delete(self):
         with psycopg.connect(
             "dbname={} user={} password={}".format(
-                "postgres", self.user, self.postgres_password
+                self.admin_user, self.admin_user, self.admin_password
             )
         ) as conn:
             conn.autocommit = True
@@ -28,16 +53,25 @@ class Db:
                 except psycopg.ProgrammingError:
                     pass
 
+                try:
+                    cur.execute("DROP USER {}".format(self.user))
+                except psycopg.ProgrammingError:
+                    pass
+
     def create(self):
         with psycopg.connect(
             "dbname={} user={} password={}".format(
-                "postgres", self.user, self.postgres_password
+                self.admin_user, self.admin_user, self.admin_password
             )
         ) as conn:
             conn.autocommit = True
 
             with conn.cursor() as cur:
-                cur.execute("CREATE DATABASE {}".format(self.name))
+                cur.execute(
+                    "CREATE USER {} WITH PASSWORD '{}'".format(self.user, self.password)
+                )
+
+                cur.execute("CREATE DATABASE {} OWNER {}".format(self.name, self.user))
 
     def connect(self):
         conn = psycopg.connect(
@@ -104,7 +138,7 @@ class Db:
                             )
                             """)
 
-                self.insert_placeholder_data(cur)
+                self.insert_placeholder_data(cur, 20)
 
     def create_user(cur, name, email, password, age):
         hash_pass = generate_password_hash(password)
@@ -120,6 +154,9 @@ class Db:
                 id, date, message
             )
         )
+
+    def delete_post(cur, post_id):
+        cur.execute("DELETE FROM posts WHERE id = %s", (post_id,))
 
     def get_user(cur, id):
         cur.execute(
@@ -205,11 +242,20 @@ class Db:
                     (user_id_1, user_id_2, relation_type),
                 )
 
-    def insert_placeholder_data(self, cur):
+    def insert_placeholder_data(self, cur, n):
         Db.create_user(cur, "alice", "alice@alice", "alice", 30)
         Db.create_user(cur, "bob", "bob@bob", "bob", 35)
         Db.create_user(cur, "charlie", "charlie@charlie", "charlie", 25)
         Db.create_user(cur, "david", "david@David", "david", 40)
+
+        # Generate random users
+        for _ in range(5,n+1):
+            first_name = fake.first_name()
+            name = first_name
+            email = fake.email()
+            password = name #fake.password()
+            age = random.randint(18, 80)
+            Db.create_user(cur, name, email, password, age)
 
         # Inserting data into the 'groups' table
         cur.execute("INSERT INTO groups (user_id, name) VALUES (%s, %s)", (1, "Staff"))
@@ -224,9 +270,24 @@ class Db:
         Db.add_post(cur, 3, message="Welcome to my domain!")
         Db.add_post(cur, 4, message="Test post, please ignore")
 
+        # Generate random texts
+        for i in range(5,n+1):
+            post_message = fake.text()  # Generate a random text message
+            Db.add_post(cur, i, message=post_message)
+
+
         # Adding a relationship
         self.add_relation(1, 2, Relation.friends)
         self.add_relation(1, 3, Relation.friends)
+
+        #Creating Groups
+        Db.add_group(cur, 2, "Bob og Charlie's gruppe")
+
+        #Adding Group Memberships
+        Db.join_group(cur, 1, 1)
+        Db.join_group(cur, 2, 1)
+        Db.join_group(cur, 2, 4)
+        Db.join_group(cur, 3, 4)
 
         # # Removing a relationship
         # remove_relation(1, 2)
@@ -248,9 +309,11 @@ class Db:
 
         # Testing regular_match function
         # print("Posts matching 'world':", self.regular_match("world"))
-        # print("Posts matching 'world':", self.regular_match("WORLD"))
-        # print("Posts matching 'world':", self.regular_match("hello world"))
-        # print("Posts matching 'world':", self.regular_match("test world"))
+        # print("Posts matching 'WORLD':", self.regular_match("WORLD"))
+        # print("Posts matching 'hello world':", self.regular_match("hello world"))
+        # print("Posts matching 'test world':", self.regular_match("test world"))
+
+        print("Test : ", self.get_posts_of_groups_ordered(2))
 
     def remove_relation(self, user_id_1, user_id_2):
         with self.connect() as conn:
@@ -314,3 +377,84 @@ class Db:
                 """
                 cur.execute(query, (pattern,))
                 return cur.fetchall()
+
+    #Given a group id, returns all the posts made by its members
+    def get_posts_of_group(self, groupid):
+        with self.connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT users.name, posts.date, posts.message
+                    FROM posts
+                    JOIN users
+                    ON posts.user_id = users.id
+                    WHERE posts.user_id IN (
+                        SELECT user_id
+                        FROM group_memberships
+                        WHERE group_id = %(groupid)s
+                    );
+                """,
+                    {"groupid": groupid},
+                )
+                return cur.fetchall()
+            
+    #Given a user_id, returns all the posts made by people who share a group with that person     
+    def get_posts_of_groups(self, user_id):
+        with self.connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT users.name, posts.date, posts.message
+                    FROM posts
+                    JOIN users
+                    ON posts.user_id = users.id
+                    WHERE posts.user_id IN (
+                        SELECT user_id
+                        FROM group_memberships
+                        WHERE group_id IN(
+                            SELECT group_id
+                            FROM group_memberships
+                            WHERE user_id = %(user_id)s
+                        )
+                    )
+                    """,
+                    {"user_id": user_id},
+                )
+                return cur.fetchall()
+    
+    #Given a group ID, returns the name of the corresponding group
+    def get_name_of_group(self, group_id):
+        with self.connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT name
+                    FROM groups
+                    WHERE id = %(group_id)s
+                    """,
+                    {"group_id": group_id},
+                )
+                return cur.fetchall()
+    
+    #Returns a list of the names of groups a given user is a member of, and the posts made by their members
+    def get_posts_of_groups_ordered(self, user_id):
+        with self.connect() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT group_id
+                    FROM group_memberships
+                    WHERE user_id = %s
+                    """,
+                    (user_id,)
+                )
+                group_ids = cur.fetchall()
+
+                result = []
+
+                for id in group_ids:
+                    posts = Db.get_posts_of_group(self, (id[0]))
+                    name = Db.get_name_of_group(self, id[0])
+                    result.extend((posts, name))
+
+                return result
