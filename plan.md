@@ -7,7 +7,7 @@
 - login() DONE
 - logout() DONE
 ### Group
-- show_all_posts_in_group()
+- show_all_posts_in_group() DONE
 - add_group() DONE
 - delete_group() DONE
 - join_group() DONE
