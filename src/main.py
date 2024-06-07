@@ -11,10 +11,7 @@ main = Blueprint("main", __name__)
 
 @main.route("/")
 def index():
-    posts = db.get_posts()
-    posts = Util.convert_to_web(posts)
-
-    return render_template("main.html", posts=posts, user=current_user)
+    return redirect(url_for("main.home"))
 
 
 @main.route("/home")
