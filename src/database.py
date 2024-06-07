@@ -1,7 +1,10 @@
 import psycopg
 from enum import IntEnum, auto
 from werkzeug.security import generate_password_hash
+from faker import Faker
+import random
 
+fake = Faker()
 
 class Relation(IntEnum):
     friends = auto()
@@ -134,7 +137,7 @@ class Db:
                             )
                             """)
 
-                self.insert_placeholder_data(cur)
+                self.insert_placeholder_data(cur, 20)
 
     def create_user(cur, name, email, password, age):
         hash_pass = generate_password_hash(password)
@@ -228,11 +231,21 @@ class Db:
                     (user_id_1, user_id_2, relation_type),
                 )
 
-    def insert_placeholder_data(self, cur):
+    def insert_placeholder_data(self, cur, n):
         Db.create_user(cur, "alice", "alice@alice", "alice", 30)
         Db.create_user(cur, "bob", "bob@bob", "bob", 35)
         Db.create_user(cur, "charlie", "charlie@charlie", "charlie", 25)
         Db.create_user(cur, "david", "david@David", "david", 40)
+
+        # Generate n random users
+        for _ in range(5,n+1):
+            first_name = fake.first_name()
+            last_name = fake.last_name().lower()
+            name = f"{first_name} {last_name}"
+            email = fake.email()
+            password = name #fake.password() 
+            age = random.randint(18, 80)
+            Db.create_user(cur, name, email, password, age)
 
         # Inserting data into the 'groups' table
         cur.execute("INSERT INTO groups (user_id, name) VALUES (%s, %s)", (1, "Staff"))
@@ -246,6 +259,12 @@ class Db:
         Db.add_post(cur, 2, message="This is a test post.")
         Db.add_post(cur, 3, message="Welcome to my domain!")
         Db.add_post(cur, 4, message="Test post, please ignore")
+
+        # Generate n random texts
+        for i in range(5,n+1):
+            post_message = fake.text()  # Generate a random text message
+            Db.add_post(cur, i, message=post_message)
+
 
         # Adding a relationship
         self.add_relation(1, 2, Relation.friends)
@@ -272,9 +291,9 @@ class Db:
 
         # Testing regular_match function
         # print("Posts matching 'world':", self.regular_match("world"))
-        # print("Posts matching 'world':", self.regular_match("WORLD"))
-        # print("Posts matching 'world':", self.regular_match("hello world"))
-        # print("Posts matching 'world':", self.regular_match("test world"))
+        # print("Posts matching 'WORLD':", self.regular_match("WORLD"))
+        # print("Posts matching 'hello world':", self.regular_match("hello world"))
+        # print("Posts matching 'test world':", self.regular_match("test world"))
 
     def remove_relation(self, user_id_1, user_id_2):
         with self.connect() as conn:
