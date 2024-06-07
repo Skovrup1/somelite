@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, url_for, redirect, request, abort
+from flask import Blueprint, render_template, url_for, redirect, request
 from flask_login import login_required, current_user
 
 from database import Db
@@ -22,7 +22,7 @@ def home():
         names_posts = Db.get_names_and_posts(cur)
         names, posts = Util.convert_to_web(names_posts)
 
-        return render_template("main.html", names=names, posts=posts, user=current_user)
+        return render_template("home.html", names=names, posts=posts, user=current_user)
 
 
 @main.route("/home", methods=["POST"])
@@ -89,15 +89,12 @@ def groups():
             "groups.html", posts=posts, groups=groups, user=current_user
         )
 
-    group_posts = None
+    posts = None
     for group in groups:
         group_posts, name = group
 
         if key == name:
             posts = group_posts
-
-    if not group_posts:
-        abort(404)
 
     return render_template("groups.html", posts=posts, groups=groups, user=current_user)
 
