@@ -155,8 +155,9 @@ class Db:
             )
         )
 
-    def delete_post(cur, post_id):
-        cur.execute("DELETE FROM posts WHERE id = %s", (post_id,))
+    def delete_post(self, post_id):
+        with self.connect().cursor() as cur:
+            cur.execute("DELETE FROM posts WHERE id = %s", (post_id,))
 
     def get_user(cur, id):
         cur.execute(

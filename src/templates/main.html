@@ -23,15 +23,23 @@
     <p class="break-words max-w-xl">
         {{post.message}}
     </p>
+    <div class="flex flex-row space-x-4">
     <form class="" action="#" method="POST">
-        <input type="hidden" name="post_id" value="{{post.id}}">
-        <button type="like">
+        <input type="hidden" name="like_post" value="{{post.id}}">
+        <button type="submit">
             <i class="fa fa-thumbs-up"></i>
             <span>
                 {{post.likes}}
             </span>
         </button>
     </form>
+    <form class="" action="#" method="POST">
+        <input type="hidden" name="delete_post" value="{{post.id}}">
+        <button type="submit">
+            <i class="fa fa-crosshairs"></i>
+        </button>
+    </form>
+    </div>
 </div>
 {% endfor %}
 

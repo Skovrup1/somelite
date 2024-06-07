@@ -27,9 +27,13 @@ def home():
 
 @main.route("/home", methods=["POST"])
 def home_post():
-    post_id = request.form.get("post_id")
+    like_post = request.form.get("like_post")
+    delete_post = request.form.get("delete_post")
 
-    db.like_post(current_user.id, post_id)
+    if like_post:
+        db.like_post(current_user.id, like_post)
+    elif delete_post:
+        db.delete_post(delete_post)
 
     return redirect(url_for("main.home"))
 
@@ -46,9 +50,13 @@ def friends():
 @main.route("/friends", methods=["POST"])
 @login_required
 def friends_post():
-    post_id = request.form.get("post_id")
+    like_post = request.form.get("like_post")
+    delete_post = request.form.get("delete_post")
 
-    db.like_post(current_user.id, post_id)
+    if like_post:
+        db.like_post(current_user.id, like_post)
+    elif delete_post:
+        db.delete_post(delete_post)
 
     return redirect(url_for("main.friends"))
 
@@ -97,8 +105,12 @@ def groups():
 @main.route("/groups", methods=["POST"])
 @login_required
 def groups_post():
-    post_id = request.form.get("post_id")
+    like_post = request.form.get("like_post")
+    delete_post = request.form.get("delete_post")
 
-    db.like_post(current_user.id, post_id)
+    if like_post:
+        db.like_post(current_user.id, like_post)
+    elif delete_post:
+        db.delete_post(delete_post)
 
     return redirect(url_for("main.groups", **request.args.to_dict()))
