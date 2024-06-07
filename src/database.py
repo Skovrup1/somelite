@@ -249,11 +249,11 @@ class Db:
         Db.create_user(cur, "david", "david@David", "david", 40)
 
         # Generate random users
-        for _ in range(5,n+1):
+        for _ in range(5, n + 1):
             first_name = fake.first_name()
             name = first_name
             email = fake.email()
-            password = name #fake.password()
+            password = name  # fake.password()
             age = random.randint(18, 80)
             Db.create_user(cur, name, email, password, age)
 
@@ -271,19 +271,18 @@ class Db:
         Db.add_post(cur, 4, message="Test post, please ignore")
 
         # Generate random texts
-        for i in range(5,n+1):
+        for i in range(5, n + 1):
             post_message = fake.text()  # Generate a random text message
             Db.add_post(cur, i, message=post_message)
-
 
         # Adding a relationship
         self.add_relation(1, 2, Relation.friends)
         self.add_relation(1, 3, Relation.friends)
 
-        #Creating Groups
+        # Creating Groups
         Db.add_group(cur, 2, "Bob og Charlie's gruppe")
 
-        #Adding Group Memberships
+        # Adding Group Memberships
         Db.join_group(cur, 1, 1)
         Db.join_group(cur, 2, 1)
         Db.join_group(cur, 2, 4)
@@ -378,13 +377,13 @@ class Db:
                 cur.execute(query, (pattern,))
                 return cur.fetchall()
 
-    #Given a group id, returns all the posts made by its members
+    # Given a group id, returns all the posts made by its members
     def get_posts_of_group(self, groupid):
         with self.connect() as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    SELECT users.name, posts.date, posts.message
+                    SELECT users.name, posts.id, posts.user_id, posts.date, posts.message
                     FROM posts
                     JOIN users
                     ON posts.user_id = users.id
@@ -397,14 +396,14 @@ class Db:
                     {"groupid": groupid},
                 )
                 return cur.fetchall()
-            
-    #Given a user_id, returns all the posts made by people who share a group with that person     
+
+    # Given a user_id, returns all the posts made by people who share a group with that person
     def get_posts_of_groups(self, user_id):
         with self.connect() as conn:
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    SELECT users.name, posts.date, posts.message
+                    SELECT users.name, posts.id, posts.user_id, posts.date, posts.message
                     FROM posts
                     JOIN users
                     ON posts.user_id = users.id
@@ -421,8 +420,8 @@ class Db:
                     {"user_id": user_id},
                 )
                 return cur.fetchall()
-    
-    #Given a group ID, returns the name of the corresponding group
+
+    # Given a group ID, returns the name of the corresponding group
     def get_name_of_group(self, group_id):
         with self.connect() as conn:
             with conn.cursor() as cur:
@@ -434,9 +433,9 @@ class Db:
                     """,
                     {"group_id": group_id},
                 )
-                return cur.fetchall()
-    
-    #Returns a list of the names of groups a given user is a member of, and the posts made by their members
+                return cur.fetchone()
+
+    # Returns a list of the names of groups a given user is a member of, and the posts made by their members
     def get_posts_of_groups_ordered(self, user_id):
         with self.connect() as conn:
             with conn.cursor() as cur:
@@ -446,15 +445,14 @@ class Db:
                     FROM group_memberships
                     WHERE user_id = %s
                     """,
-                    (user_id,)
+                    (user_id,),
                 )
                 group_ids = cur.fetchall()
 
                 result = []
-
                 for id in group_ids:
                     posts = Db.get_posts_of_group(self, (id[0]))
                     name = Db.get_name_of_group(self, id[0])
-                    result.extend((posts, name))
+                    result.append((posts, name[0]))
 
                 return result
