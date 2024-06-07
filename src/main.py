@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, url_for, redirect, request
 from flask_login import login_required, current_user
 
 from util import Util
@@ -15,11 +15,10 @@ def index():
     return render_template("main.html", posts=posts, user=current_user)
 
 
-
 @main.route("/home")
 @login_required
 def home():
-    #posts = db.get_posts_by_user()
+    # posts = db.get_posts_by_user()
     posts = db.get_posts()
     posts = Util.convert_to_web(posts)
 
@@ -36,10 +35,20 @@ def friends():
     return render_template("main.html", posts=posts, user=current_user)
 
 
+@main.route("/friends", methods=["POST"])
+@login_required
+def friends_post():
+    post_id = request.form.get("post_id")
+
+    db.like_post(current_user.id, post_id)
+
+    return redirect(url_for("main.friends"))
+
+
 @main.route("/groups")
 @login_required
 def groups():
-    #posts = db.get_posts_of_groups()
+    # posts = db.get_posts_of_groups()
     posts = db.get_posts()
     posts = Util.convert_to_web(posts)
 

@@ -147,7 +147,7 @@ class Db:
         with self.connect() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                            SELECT users.name, posts.date, posts.message
+                            SELECT users.name, posts.id, posts.date, posts.message
                             FROM users
                             JOIN posts ON users.id = posts.user_id;
                             """)
@@ -159,7 +159,7 @@ class Db:
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    SELECT users.name, posts.date, posts.message
+                    SELECT users.name, posts.id, posts.date, posts.message
                     FROM posts
                     JOIN users
                     ON posts.user_id = users.id
