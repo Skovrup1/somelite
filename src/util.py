@@ -1,7 +1,11 @@
-class Util:
-    def convert_to_web(posts):
-        new_posts = []
-        for post in posts:
-            new_posts.append((post[0].capitalize(), post[1], post[2].strftime("%H.%M, %A %d, %B"), post[3]))
+from post import Post
 
-        return new_posts
+class Util:
+    def convert_to_web(names_posts):
+        names = []
+        posts = []
+        for name, *post in names_posts:
+            names.append(name.capitalize())
+            posts.append(Post(*post))
+
+        return (names, posts)

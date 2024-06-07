@@ -23,27 +23,27 @@ def home():
     # posts = db.get_posts_by_user()
     with db.connect().cursor() as cur:
         names_posts = Db.get_names_and_posts(cur)
-        new_posts = []
+        names, posts = Util.convert_to_web(names_posts)
 
-        for name_post in names_posts:
-            (name, *post) = name_post
-            new_posts.append((name, Post(*post)))
+        return render_template("main.html", names=names, posts=posts, user=current_user)
 
-        return render_template("main.html", posts=new_posts, user=current_user)
+@main.route("/home", methods=["POST"])
+def home_post():
+    post_id = request.form.get("post_id")
+
+    db.like_post(current_user.id, post_id)
+
+    return redirect(url_for("main.home"))
+
 
 
 @main.route("/friends")
 @login_required
 def friends():
     names_posts = db.get_posts_of_friends(current_user.id)
-    new_posts = []
+    names, posts = Util.convert_to_web(names_posts)
 
-    for name_post in names_posts:
-        (name, *post) = name_post
-        new_posts.append((name, Post(*post)))
-
-    print(friends)
-    return render_template("main.html", posts=new_posts, user=current_user)
+    return render_template("main.html", names=names, posts=posts, user=current_user)
 
 
 @main.route("/friends", methods=["POST"])
@@ -60,7 +60,7 @@ def friends_post():
 @login_required
 def groups():
     # posts = db.get_posts_of_groups()
-    posts = db.get_posts()
-    posts = Util.convert_to_web(posts)
+    names_posts = db.get_names_and_posts()
+    names, posts = Util.convert_to_web(names_posts)
 
     return render_template("main.html", posts=posts, user=current_user)
