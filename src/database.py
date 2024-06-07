@@ -237,10 +237,10 @@ class Db:
         Db.create_user(cur, "charlie", "charlie@charlie", "charlie", 25)
         Db.create_user(cur, "david", "david@David", "david", 40)
 
-        # Generate n random users
+        # Generate random users
         for _ in range(5,n+1):
             first_name = fake.first_name()
-            last_name = fake.last_name().lower()
+            last_name = fake.last_name()
             name = f"{first_name} {last_name}"
             email = fake.email()
             password = name #fake.password() 
@@ -260,7 +260,7 @@ class Db:
         Db.add_post(cur, 3, message="Welcome to my domain!")
         Db.add_post(cur, 4, message="Test post, please ignore")
 
-        # Generate n random texts
+        # Generate random texts
         for i in range(5,n+1):
             post_message = fake.text()  # Generate a random text message
             Db.add_post(cur, i, message=post_message)
