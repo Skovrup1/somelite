@@ -240,10 +240,9 @@ class Db:
         # Generate random users
         for _ in range(5,n+1):
             first_name = fake.first_name()
-            last_name = fake.last_name()
-            name = f"{first_name} {last_name}"
+            name = first_name
             email = fake.email()
-            password = name #fake.password() 
+            password = name #fake.password()
             age = random.randint(18, 80)
             Db.create_user(cur, name, email, password, age)
 
