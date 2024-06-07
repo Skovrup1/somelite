@@ -28,7 +28,10 @@ class Db:
                 except psycopg.ProgrammingError:
                     pass
 
-                cur.execute("DROP USER {}".format(self.name))
+                try:
+                    cur.execute("DROP USER {}".format(self.name))
+                except psycopg.ProgrammingError:
+                    pass
 
     def create(self):
         with psycopg.connect(
