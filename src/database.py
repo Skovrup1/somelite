@@ -28,7 +28,7 @@ class Db:
                     pass
 
     def create(self):
-        with psycopg.connect("dbname={} user={}".format("postgres", self.user)) as conn:
+        with psycopg.connect("dbname={} user={} password={}".format("postgres", self.user, self.postgres_password)) as conn:
             conn.autocommit = True
 
             with conn.cursor() as cur:
