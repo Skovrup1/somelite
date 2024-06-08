@@ -160,40 +160,41 @@ class Db:
         with self.connect().cursor() as cur:
             cur.execute("DELETE FROM posts WHERE id = %s", (post_id,))
 
-    def get_user(cur, id):
-        cur.execute(
-            """
-                    SELECT *
-                    FROM users
-                    WHERE id = %s
-                    """,
-            (id,),
-        )
+    def get_user(self, id):
+        with self.connect().cursor() as cur:
+            cur.execute(
+                """
+                        SELECT *
+                        FROM users
+                        WHERE id = %s
+                        """,
+                (id,),
+            )
 
-        return cur.fetchone()
+            return cur.fetchone()
 
-    def get_user_by_email(cur, email):
-        print("GETUSER")
-        print(email)
-        cur.execute(
-            """
-                    SELECT *
-                    FROM users
-                    WHERE email = %s
-                    """,
-            (email,),
-        )
-
-        return cur.fetchone()
+    def get_user_by_email(self, email):
+        with self.connect().cursor() as cur:
+            cur.execute(
+                """
+                        SELECT *
+                        FROM users
+                        WHERE email = %s
+                        """,
+                (email,),
+            )
+    
+            return cur.fetchone()
 
     def delete_user(self, id):
         with self.connect().cursor() as cur:
             cur.execute("DELETE FROM users WHERE id = %s", (id,))
 
-    def get_users(cur):
-        cur.execute("SELECT * FROM users")
+    def get_users(self):
+        with self.connect().cursor() as cur:
+            cur.execute("SELECT * FROM users")
 
-        return cur.fetchall()
+            return cur.fetchall()
 
     def get_posts(self):
         with self.connect() as conn:
@@ -205,13 +206,15 @@ class Db:
 
                 return cur.fetchall()
 
-    def get_names_and_posts(cur):
-        cur.execute("""
-                    SELECT users.name, posts.id, posts.user_id, posts.date, posts.message
-                    FROM users
-                    JOIN posts ON users.id = posts.user_id
-                    """)
-        return cur.fetchall()
+    def get_names_and_posts(self):
+        with self.connect().cursor() as cur:
+            cur.execute("""
+                        SELECT users.name, posts.id, posts.user_id, posts.date, posts.message
+                        FROM users
+                        JOIN posts ON users.id = posts.user_id
+                        """)
+            
+            return cur.fetchall()
 
     def get_posts_of_user(self, id):
         with self.connect().cursor() as cur:
@@ -228,43 +231,42 @@ class Db:
             return cur.fetchall()
 
     def get_posts_of_friends(self, id):
-        with self.connect() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    SELECT users.name, posts.id, posts.user_id, posts.date, posts.message
-                    FROM posts
-                    JOIN users
-                    ON posts.user_id = users.id
-                    WHERE posts.user_id IN (
-                        SELECT user_id_1
-                        FROM relationships
-                        WHERE user_id_2 = %(id)s
-                    )
-                    OR posts.user_id IN (
-                        SELECT user_id_2
-                        FROM relationships
-                        WHERE user_id_1 = %(id)s
-                    );
-                """,
-                    {"id": id},
+        with self.connect().cursor() as cur:
+            cur.execute(
+                """
+                SELECT users.name, posts.id, posts.user_id, posts.date, posts.message
+                FROM posts
+                JOIN users
+                ON posts.user_id = users.id
+                WHERE posts.user_id IN (
+                    SELECT user_id_1
+                    FROM relationships
+                    WHERE user_id_2 = %(id)s
                 )
-                return cur.fetchall()
+                OR posts.user_id IN (
+                    SELECT user_id_2
+                    FROM relationships
+                    WHERE user_id_1 = %(id)s
+                );
+            """,
+                {"id": id},
+            )
+
+            return cur.fetchall()
 
     def add_relation(self, user_id_1, user_id_2, relation_type):
-        with self.connect() as conn:
-            with conn.cursor() as cur:
-                # Check if the relationship already exists
+        with self.connect().cursor() as cur:
+            # Check if the relationship already exists
+            cur.execute(
+                "SELECT * FROM relationships WHERE user_id_1 = %s AND user_id_2 = %s",
+                (user_id_1, user_id_2),
+            )
+            relationship = cur.fetchone()
+            if not relationship:
                 cur.execute(
-                    "SELECT * FROM relationships WHERE user_id_1 = %s AND user_id_2 = %s",
-                    (user_id_1, user_id_2),
+                    "INSERT INTO relationships (user_id_1, user_id_2, type) VALUES (%s, %s, %s)",
+                    (user_id_1, user_id_2, relation_type),
                 )
-                relationship = cur.fetchone()
-                if not relationship:
-                    cur.execute(
-                        "INSERT INTO relationships (user_id_1, user_id_2, type) VALUES (%s, %s, %s)",
-                        (user_id_1, user_id_2, relation_type),
-                    )
 
     def insert_placeholder_data(self, n):
         # Create fixed users
@@ -392,116 +394,109 @@ class Db:
             )
 
     def like_post(self, user_id, post_id):
-        with self.connect() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "INSERT INTO likes (user_id, post_id) VALUES (%s, %s) ON CONFLICT DO NOTHING",  # if a duplicate like is attempted, the insertion is ignored
-                    (user_id, post_id),
-                )
+        with self.connect().cursor() as cur:
+            cur.execute(
+                "INSERT INTO likes (user_id, post_id) VALUES (%s, %s) ON CONFLICT DO NOTHING",  # if a duplicate like is attempted, the insertion is ignored
+                (user_id, post_id),
+            )
 
     def show_all_likes(self, post_id):
-        with self.connect() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                            SELECT COUNT(likes.user_id) AS like_count
-                            FROM likes
-                            WHERE likes.post_id = %s;
-                            """,
-                    (post_id,),
-                )
-                return cur.fetchone()[0]
+        with self.connect().cursor() as cur:
+            cur.execute(
+                """
+                        SELECT COUNT(likes.user_id) AS like_count
+                        FROM likes
+                        WHERE likes.post_id = %s;
+                        """,
+                (post_id,),
+            )
+            return cur.fetchone()[0]
 
     def regular_match(self, keyword):
-        with self.connect() as conn:
-            with conn.cursor() as cur:
-                words = keyword.split()
-                pattern = "|".join(words)
-                query = """
-                    SELECT users.name, posts.id, posts.user_id, posts.date, posts.message
-                    FROM posts
-                    JOIN users ON posts.user_id = users.id
-                    WHERE posts.message ~* %s;
-                """
-                cur.execute(query, (pattern,))
-                return cur.fetchall()
+        with self.connect().cursor() as cur:
+            words = keyword.split()
+            pattern = "|".join(words)
+            query = """
+                SELECT users.name, posts.id, posts.user_id, posts.date, posts.message
+                FROM posts
+                JOIN users ON posts.user_id = users.id
+                WHERE posts.message ~* %s;
+            """
+            cur.execute(query, (pattern,))
+            return cur.fetchall()
 
     # Given a group id, returns all the posts made by its members
     def get_posts_of_group(self, groupid):
-        with self.connect() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    SELECT users.name, posts.id, posts.user_id, posts.date, posts.message
-                    FROM posts
-                    JOIN users
-                    ON posts.user_id = users.id
-                    WHERE posts.user_id IN (
-                        SELECT user_id
-                        FROM group_memberships
-                        WHERE group_id = %(groupid)s
-                    );
-                """,
-                    {"groupid": groupid},
-                )
-                return cur.fetchall()
+        with self.connect().cursor() as cur:
+            cur.execute(
+                """
+                SELECT users.name, posts.id, posts.user_id, posts.date, posts.message
+                FROM posts
+                JOIN users
+                ON posts.user_id = users.id
+                WHERE posts.user_id IN (
+                    SELECT user_id
+                    FROM group_memberships
+                    WHERE group_id = %(groupid)s
+                );
+            """,
+                {"groupid": groupid},
+            )
+            return cur.fetchall()
 
     # Given a user_id, returns all the posts made by people who share a group with that person
     def get_posts_of_groups(self, user_id):
-        with self.connect() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    SELECT users.name, posts.id, posts.user_id, posts.date, posts.message
-                    FROM posts
-                    JOIN users
-                    ON posts.user_id = users.id
-                    WHERE posts.user_id IN (
-                        SELECT user_id
+        with self.connect().cursor() as cur:
+            cur.execute(
+                """
+                SELECT users.name, posts.id, posts.user_id, posts.date, posts.message
+                FROM posts
+                JOIN users
+                ON posts.user_id = users.id
+                WHERE posts.user_id IN (
+                    SELECT user_id
+                    FROM group_memberships
+                    WHERE group_id IN(
+                        SELECT group_id
                         FROM group_memberships
-                        WHERE group_id IN(
-                            SELECT group_id
-                            FROM group_memberships
-                            WHERE user_id = %(user_id)s
-                        )
+                        WHERE user_id = %(user_id)s
                     )
-                    """,
-                    {"user_id": user_id},
                 )
-                return cur.fetchall()
+                """,
+                {"user_id": user_id},
+            )
+            return cur.fetchall()
 
     # Given a group ID, returns the name of the corresponding group
     def get_name_of_group(self, group_id):
-        with self.connect() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    SELECT name
-                    FROM groups
-                    WHERE id = %(group_id)s
-                    """,
-                    {"group_id": group_id},
-                )
-                return cur.fetchone()
+        with self.connect().cursor() as cur:
+            cur.execute(
+                """
+                SELECT name
+                FROM groups
+                WHERE id = %(group_id)s
+                """,
+                {"group_id": group_id},
+            )
+            return cur.fetchone()
 
     # Returns a list of the names of groups a given user is a member of, and the posts made by their members
     def get_posts_of_groups_ordered(self, user_id):
-        with self.connect() as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    SELECT group_id
-                    FROM group_memberships
-                    WHERE user_id = %s
-                    """,
-                    (user_id,),
-                )
-                group_ids = cur.fetchall()
+        with self.connect().cursor() as cur:
+            cur.execute(
+                """
+                SELECT group_id
+                FROM group_memberships
+                WHERE user_id = %s
+                """,
+                (user_id,),
+            )
+            group_ids = cur.fetchall()
 
-                result = []
-                for id in group_ids:
-                    posts = Db.get_posts_of_group(self, (id[0]))
-                    name = Db.get_name_of_group(self, id[0])
-                    result.append((posts, name[0]))
+            result = []
+            for id in group_ids:
+                posts = Db.get_posts_of_group(self, (id[0]))
+                name = Db.get_name_of_group(self, id[0])
+                result.append((posts, name[0]))
 
-                return result
+            return result
