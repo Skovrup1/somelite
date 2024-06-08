@@ -26,14 +26,21 @@ def home():
 
 
 @main.route("/home", methods=["POST"])
+@login_required
 def home_post():
     like_post = request.form.get("like_post")
     delete_post = request.form.get("delete_post")
+    message = request.form.get("message")
+    delete_user = request.form.get("delete_account")
 
     if like_post:
         db.like_post(current_user.id, like_post)
     elif delete_post:
         db.delete_post(delete_post)
+    elif message:
+        db.add_post(current_user.id, message=message)
+    elif delete_user:
+        db.delete_user(current_user.id)
 
     return redirect(url_for("main.home"))
 

@@ -148,12 +148,12 @@ class Db:
             (name, email, hash_pass, age),
         )
 
-    def add_post(cur, id, date="CURRENT_TIMESTAMP", message=""):
-        cur.execute(
-            "INSERT INTO posts (user_id, date, message) VALUES ('{}', {}, '{}')".format(
-                id, date, message
+    def add_post(self, user_id, date="CURRENT_TIMESTAMP", message=""):
+        with self.connect().cursor() as cur:
+            cur.execute(
+                """INSERT INTO posts (user_id, date, message)
+                    VALUES ('{}', {}, '{}')""".format(user_id, date, message)
             )
-        )
 
     def delete_post(self, post_id):
         with self.connect().cursor() as cur:
@@ -185,8 +185,9 @@ class Db:
 
         return cur.fetchone()
 
-    def delete_user(self, curx, idx):
-        curx.execute("DELETE FROM users WHERE id = %s", (idx,))
+    def delete_user(self, id):
+        with self.connect().cursor() as cur:
+            cur.execute("DELETE FROM users WHERE id = %s", (id,))
 
     def get_users(cur):
         cur.execute("SELECT * FROM users")
@@ -274,15 +275,15 @@ class Db:
         cur.execute("INSERT INTO groups (user_id, name) VALUES (%s, %s)", (3, "Alumni"))
 
         # Inserting fixed data into the 'posts' table
-        Db.add_post(cur, 1, message="Hello, world!")
-        Db.add_post(cur, 2, message="This is a test post.")
-        Db.add_post(cur, 3, message="Welcome to my domain!")
-        Db.add_post(cur, 4, message="Test post, please ignore")
+        self.add_post(1, message="Hello, world!")
+        self.add_post(2, message="This is a test post.")
+        self.add_post(3, message="Welcome to my domain!")
+        self.add_post(4, message="Test post, please ignore")
 
         # Generate random data into the 'posts' table
         for i in range(5, n + 1):
-            post_message = fake.text() 
-            Db.add_post(cur, i, message=post_message)
+            post_message = fake.text()
+            self.add_post(i, message=post_message)
 
         # Adding fixed relationships
         self.add_relation(1, 2, Relation.friends)
@@ -290,14 +291,20 @@ class Db:
 
         # Adding random relationships
         max_relationships_per_user = 5
-        pairs = [(user_id_1, user_id_2) for user_id_1 in range(1, n) for user_id_2 in range(user_id_1 + 1, n + 1)]
+        pairs = [
+            (user_id_1, user_id_2)
+            for user_id_1 in range(1, n)
+            for user_id_2 in range(user_id_1 + 1, n + 1)
+        ]
         random.shuffle(pairs)
 
         relationships_per_user = {user_id: 0 for user_id in range(1, n + 1)}
 
         for user_id_1, user_id_2 in pairs:
-            if (relationships_per_user[user_id_1] < max_relationships_per_user and
-                    relationships_per_user[user_id_2] < max_relationships_per_user):
+            if (
+                relationships_per_user[user_id_1] < max_relationships_per_user
+                and relationships_per_user[user_id_2] < max_relationships_per_user
+            ):
                 self.add_relation(user_id_1, user_id_2, Relation.friends)
                 relationships_per_user[user_id_1] += 1
                 relationships_per_user[user_id_2] += 1
@@ -306,7 +313,7 @@ class Db:
         Db.add_group(cur, 2, "Bob og Charlie's gruppe")
 
         # Creating random groups
-        for user_id in range(1, 10): 
+        for user_id in range(1, 10):
             group_name = fake.company()
             Db.add_group(cur, user_id, group_name)
 
@@ -317,7 +324,7 @@ class Db:
         Db.join_group(cur, 3, 4)
 
         # Adding random group memberships
-        for user_id in range(1,n): 
+        for user_id in range(1, n):
             group_id = random.randint(1, 10)
             Db.join_group(cur, user_id, group_id)
 
@@ -364,7 +371,7 @@ class Db:
         curx.execute("DELETE FROM groups WHERE user_id = %s", (owner_id,))
 
     def join_group(curx, user_id, group_id):
-    # Check if the membership already exists
+        # Check if the membership already exists
         curx.execute(
             "SELECT * FROM group_memberships WHERE user_id = %s AND group_id = %s",
             (user_id, group_id),
@@ -375,7 +382,7 @@ class Db:
             curx.execute(
                 "INSERT INTO group_memberships (user_id, group_id) VALUES (%s, %s)",
                 (user_id, group_id),
-        )
+            )
 
     def leave_group(curx, user_id, group_id):
         curx.execute(
