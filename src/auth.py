@@ -18,11 +18,9 @@ def login():
 def login_post():
     email = request.form.get("email")
     email = email.lower()
-
-    with db.connect().cursor() as cur:
-        print("USERS")
-        print(Db.get_users(cur))
-        user = Db.get_user_by_email(cur, email)
+    
+    db.get_users()
+    user = db.get_user_by_email(email)
 
     if not user:
         print("no user by that email")
@@ -59,16 +57,8 @@ def signup_post():
 
     password = request.form.get("password")
 
-    with db.connect().cursor() as cur:
-        Db.create_user(cur, name, email, password, 20)
-
-        users = Db.get_users(cur)
-        print(users)
-
-    # if email_exists:
-    #    flash('Email address already exists')
-    #    return redirect(url_for("auth.signup"))
-
+    db.create_user(name, email, password, 20)
+   
     return redirect(url_for("auth.login"))
 
 
