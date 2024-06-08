@@ -1,7 +1,6 @@
 from flask import Blueprint, render_template, url_for, redirect, request
 from flask_login import login_required, current_user
 
-from database import Db
 from util import Util
 from app import db
 from post import Post
@@ -17,12 +16,10 @@ def index():
 @main.route("/home")
 @login_required
 def home():
-    # posts = db.get_posts_by_user()
-    with db.connect().cursor() as cur:
-        names_posts = Db.get_names_and_posts(cur)
-        names, posts = Util.convert_to_web(names_posts)
+    names_posts = db.get_posts_of_user(current_user.id)
+    names, posts = Util.convert_to_web(names_posts)
 
-        return render_template("home.html", names=names, posts=posts, user=current_user)
+    return render_template("home.html", names=names, posts=posts, user=current_user)
 
 
 @main.route("/home", methods=["POST"])

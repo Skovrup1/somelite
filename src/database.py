@@ -138,15 +138,16 @@ class Db:
                             )
                             """)
 
-                self.insert_placeholder_data(cur, 20)
+                self.insert_placeholder_data(20)
 
-    def create_user(cur, name, email, password, age):
+    def create_user(self, name, email, password, age):
         hash_pass = generate_password_hash(password)
 
-        cur.execute(
-            "INSERT INTO users (name, email, password, age) VALUES (%s, %s, %s, %s)",
-            (name, email, hash_pass, age),
-        )
+        with self.connect().cursor() as cur:
+            cur.execute(
+                "INSERT INTO users (name, email, password, age) VALUES (%s, %s, %s, %s)",
+                (name, email, hash_pass, age),
+            )
 
     def add_post(self, user_id, date="CURRENT_TIMESTAMP", message=""):
         with self.connect().cursor() as cur:
@@ -208,9 +209,23 @@ class Db:
         cur.execute("""
                     SELECT users.name, posts.id, posts.user_id, posts.date, posts.message
                     FROM users
-                    JOIN posts ON users.id = posts.user_id;
+                    JOIN posts ON users.id = posts.user_id
                     """)
         return cur.fetchall()
+
+    def get_posts_of_user(self, id):
+        with self.connect().cursor() as cur:
+            cur.execute(
+                """
+                        SELECT users.name, posts.id, posts.user_id, posts.date, posts.message
+                        FROM users
+                        JOIN posts ON users.id = posts.user_id
+                        WHERE users.id = %s
+            """,
+                (id,),
+            )
+
+            return cur.fetchall()
 
     def get_posts_of_friends(self, id):
         with self.connect() as conn:
@@ -251,12 +266,12 @@ class Db:
                         (user_id_1, user_id_2, relation_type),
                     )
 
-    def insert_placeholder_data(self, cur, n):
+    def insert_placeholder_data(self, n):
         # Create fixed users
-        Db.create_user(cur, "alice", "alice@alice", "alice", 30)
-        Db.create_user(cur, "bob", "bob@bob", "bob", 35)
-        Db.create_user(cur, "charlie", "charlie@charlie", "charlie", 25)
-        Db.create_user(cur, "david", "david@david", "david", 40)
+        self.create_user("alice", "alice@alice", "alice", 30)
+        self.create_user("bob", "bob@bob", "bob", 35)
+        self.create_user("charlie", "charlie@charlie", "charlie", 25)
+        self.create_user("david", "david@david", "david", 40)
 
         # Generate random users
         for _ in range(5, n + 1):
@@ -265,14 +280,12 @@ class Db:
             email = fake.email()
             password = name  # fake.password()
             age = random.randint(18, 80)
-            Db.create_user(cur, name, email, password, age)
+            self.create_user(name, email, password, age)
 
         # Inserting fixed data into the 'groups' table
-        cur.execute("INSERT INTO groups (user_id, name) VALUES (%s, %s)", (1, "Staff"))
-        cur.execute(
-            "INSERT INTO groups (user_id, name) VALUES (%s, %s)", (2, "Student")
-        )
-        cur.execute("INSERT INTO groups (user_id, name) VALUES (%s, %s)", (3, "Alumni"))
+        self.add_group(1, "Staff")
+        self.add_group(2, "Student")
+        self.add_group(3, "Alumni")
 
         # Inserting fixed data into the 'posts' table
         self.add_post(1, message="Hello, world!")
@@ -310,23 +323,23 @@ class Db:
                 relationships_per_user[user_id_2] += 1
 
         # Creating fixed groups
-        Db.add_group(cur, 2, "Bob og Charlie's gruppe")
+        self.add_group(2, "Bob og Charlie's gruppe")
 
         # Creating random groups
         for user_id in range(1, 10):
             group_name = fake.company()
-            Db.add_group(cur, user_id, group_name)
+            self.add_group(user_id, group_name)
 
         # Adding fixed Group Memberships
-        Db.join_group(cur, 1, 1)
-        Db.join_group(cur, 2, 1)
-        Db.join_group(cur, 2, 4)
-        Db.join_group(cur, 3, 4)
+        self.join_group(1, 1)
+        self.join_group(1, 2)
+        self.join_group(2, 4)
+        self.join_group(3, 4)
 
         # Adding random group memberships
         for user_id in range(1, n):
             group_id = random.randint(1, 10)
-            Db.join_group(cur, user_id, group_id)
+            self.join_group(user_id, group_id)
 
         # # Removing a relationship
         # remove_relation(1, 2)
@@ -362,33 +375,37 @@ class Db:
                     (user_id_1, user_id_2),
                 )
 
-    def add_group(curx, owner_id, namex):
-        curx.execute(
-            "INSERT INTO groups (user_id, name) VALUES (%s, %s)", (owner_id, namex)
-        )
-
-    def delete_group(curx, owner_id):
-        curx.execute("DELETE FROM groups WHERE user_id = %s", (owner_id,))
-
-    def join_group(curx, user_id, group_id):
-        # Check if the membership already exists
-        curx.execute(
-            "SELECT * FROM group_memberships WHERE user_id = %s AND group_id = %s",
-            (user_id, group_id),
-        )
-        existing_membership = curx.fetchone()
-        if not existing_membership:
-            # Insert the new membership if it doesn't exist
-            curx.execute(
-                "INSERT INTO group_memberships (user_id, group_id) VALUES (%s, %s)",
-                (user_id, group_id),
+    def add_group(self, owner_id, namex):
+        with self.connect().cursor() as cur:
+            cur.execute(
+                "INSERT INTO groups (user_id, name) VALUES (%s, %s)", (owner_id, namex)
             )
 
-    def leave_group(curx, user_id, group_id):
-        curx.execute(
-            "DELETE FROM group_memberships WHERE user_id = %s AND group_id = %s",
-            (user_id, group_id),
-        )
+    def delete_group(self, owner_id):
+        with self.connect().cursor() as cur:
+            cur.execute("DELETE FROM groups WHERE user_id = %s", (owner_id,))
+
+    def join_group(self, user_id, group_id):
+        with self.connect().cursor() as cur:
+            # Check if the membership already exists
+            cur.execute(
+                "SELECT * FROM group_memberships WHERE user_id = %s AND group_id = %s",
+                (user_id, group_id),
+            )
+            existing_membership = cur.fetchone()
+            if not existing_membership:
+                # Insert the new membership if it doesn't exist
+                cur.execute(
+                    "INSERT INTO group_memberships (user_id, group_id) VALUES (%s, %s)",
+                    (user_id, group_id),
+                )
+
+    def leave_group(self, user_id, group_id):
+        with self.connect().cursor() as cur:
+            cur.execute(
+                "DELETE FROM group_memberships WHERE user_id = %s AND group_id = %s",
+                (user_id, group_id),
+            )
 
     def like_post(self, user_id, post_id):
         with self.connect() as conn:
