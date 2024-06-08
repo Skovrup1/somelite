@@ -417,7 +417,7 @@ class Db:
                 words = keyword.split()
                 pattern = "|".join(words)
                 query = """
-                    SELECT users.name, posts.date, posts.message, posts.id
+                    SELECT users.name, posts.id, posts.user_id, posts.date, posts.message
                     FROM posts
                     JOIN users ON posts.user_id = users.id
                     WHERE posts.message ~* %s;

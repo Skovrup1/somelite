@@ -59,11 +59,16 @@ def friends():
 def friends_post():
     like_post = request.form.get("like_post")
     delete_post = request.form.get("delete_post")
+    search = request.form.get("search")
 
     if like_post:
         db.like_post(current_user.id, like_post)
     elif delete_post:
         db.delete_post(delete_post)
+    elif search:
+        names_posts = db.regular_match(search)
+        names, posts = Util.convert_to_web(names_posts)
+        return render_template("main.html", names=names, posts=posts, user=current_user)
 
     return redirect(url_for("main.friends"))
 
