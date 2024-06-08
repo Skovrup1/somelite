@@ -1,4 +1,3 @@
-# from database import Db
 from app import db
 
 

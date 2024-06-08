@@ -341,10 +341,6 @@ class Db:
             group_id = random.randint(1, 10)
             self.join_group(user_id, group_id)
 
-        # # Removing a relationship
-        # remove_relation(1, 2)
-        # remove_relation(1,3)
-
         # Adding some likes
         self.like_post(1, 1)
         self.like_post(1, 1)
@@ -352,18 +348,6 @@ class Db:
         self.like_post(3, 1)
         self.like_post(2, 3)
         self.like_post(1, 4)
-
-        # Testing show_all_likes function
-        # print("Number of likes for post 1:", self.show_all_likes(1))
-        # print("Number of likes for post 2:", self.show_all_likes(2))
-        # print("Number of likes for post 3:", self.show_all_likes(3))
-        # print("Number of likes for post 4:", self.show_all_likes(4))
-
-        # Testing regular_match function
-        # print("Posts matching 'world':", self.regular_match("world"))
-        # print("Posts matching 'WORLD':", self.regular_match("WORLD"))
-        # print("Posts matching 'hello world':", self.regular_match("hello world"))
-        # print("Posts matching 'test world':", self.regular_match("test world"))
 
         print("Test : ", self.get_posts_of_groups_ordered(2))
 
