@@ -2,6 +2,9 @@
 Social media website made in the framework flask.
 For the KU course DIS, Databases and Information Systems.
 
+See Guide.md for further instructions on how the app is
+accessed and used.
+
 ### Made by
 - sdw128
 - xqd627
@@ -10,6 +13,7 @@ For the KU course DIS, Databases and Information Systems.
 ### Requirements
 - python3 & pip
 - npm & tailwind (only for updating the styling)
+- You need to put your postgres password in app.py
 
 ### Building
 ##### Linux
