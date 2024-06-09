@@ -12,3 +12,11 @@ made by members of different groups. Each one of your
 group memberships will have a different tab. Simiarly,
 the 'friends' tab will allow you to see the posts made
 by each account you are friends with.
+
+# Functions
+In addition to viewing posts from friends and groups,
+a user can also add posts, and like them, and search for existing
+posts using the search fields. This functionality is relatively self-explanitory for
+people familiar with navigating social media. Lastly, a user can choose to delete his or her account,
+and doing so immediatly deletes all their friendships, posts, group-memberships and all groups that 
+they are registered as the owner of.
